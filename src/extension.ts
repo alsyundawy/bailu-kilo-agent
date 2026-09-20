@@ -41,13 +41,21 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     provider,
     vscode.window.registerWebviewViewProvider("bailuAgent.sidebar", provider, {
-      webviewOptions: { retainContextWhenHidden: true }
+      webviewOptions: { retainContextWhenHidden: true },
     }),
-    vscode.commands.registerCommand("bailuAgent.newTask", () => provider.reset()),
-    vscode.commands.registerCommand("bailuAgent.openSettings", () => provider.openSettings()),
+    vscode.commands.registerCommand("bailuAgent.newTask", () =>
+      provider.reset(),
+    ),
+    vscode.commands.registerCommand("bailuAgent.openSettings", () =>
+      provider.openSettings(),
+    ),
     vscode.commands.registerCommand("bailuAgent.stop", () => provider.stop()),
-    vscode.commands.registerCommand("bailuAgent.exportTranscript", () => provider.exportTranscript()),
-    vscode.commands.registerCommand("bailuAgent.saveSnapshot", () => provider.saveSnapshot())
+    vscode.commands.registerCommand("bailuAgent.exportTranscript", () =>
+      provider.exportTranscript(),
+    ),
+    vscode.commands.registerCommand("bailuAgent.saveSnapshot", () =>
+      provider.saveSnapshot(),
+    ),
   );
 }
 
@@ -55,11 +63,16 @@ export function deactivate(): void {
   /* Cleanup resources on extension deactivation */
 }
 
-class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable {
+class BailuViewProvider
+  implements vscode.WebviewViewProvider, vscode.Disposable
+{
   private view?: vscode.WebviewView;
   private settingsPanel?: vscode.WebviewPanel;
   private abort?: AbortController;
-  private messages: { role: "system" | "user" | "assistant"; content: string }[] = [];
+  private messages: {
+    role: "system" | "user" | "assistant";
+    content: string;
+  }[] = [];
   private streaming = false;
 
   constructor(private readonly ctx: vscode.ExtensionContext) {}
@@ -72,10 +85,15 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
 
   resolveWebviewView(view: vscode.WebviewView): void {
     this.view = view;
-    view.webview.options = { enableScripts: true, localResourceRoots: [this.ctx.extensionUri] };
+    view.webview.options = {
+      enableScripts: true,
+      localResourceRoots: [this.ctx.extensionUri],
+    };
     const nonce = crypto.randomUUID().replaceAll("-", "");
     const csp = `default-src 'none'; img-src ${view.webview.cspSource} data:; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';`;
-    const logoUri = view.webview.asWebviewUri(vscode.Uri.joinPath(this.ctx.extensionUri, "media", "logo.svg"));
+    const logoUri = view.webview.asWebviewUri(
+      vscode.Uri.joinPath(this.ctx.extensionUri, "media", "logo.svg"),
+    );
     view.webview.html = getWebviewHtml(nonce, csp, logoUri.toString());
     view.webview.onDidReceiveMessage((m: WebviewMessage) => this.onMessage(m));
   }
@@ -85,7 +103,17 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
     const mode = cfg().get<string>("mode") || "code";
     const locale = cfg().get<string>("locale") === "id" ? "id" : "en";
     const extras = loadWorkspaceExtras();
-    this.messages = [{ role: "system", content: buildSystemPrompt(mode, locale, extras, promptFor(mode, locale)) }];
+    this.messages = [
+      {
+        role: "system",
+        content: buildSystemPrompt(
+          mode,
+          locale,
+          extras,
+          promptFor(mode, locale),
+        ),
+      },
+    ];
   }
 
   openSettings(): void {
@@ -103,7 +131,11 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
       "bailuAgent.settings",
       "Bailu Settings",
       vscode.ViewColumn.One,
-      { enableScripts: true, retainContextWhenHidden: true, localResourceRoots: [this.ctx.extensionUri] }
+      {
+        enableScripts: true,
+        retainContextWhenHidden: true,
+        localResourceRoots: [this.ctx.extensionUri],
+      },
     );
     this.settingsPanel = panel;
     panel.onDidDispose(() => {
@@ -113,7 +145,9 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
     });
     const nonce = crypto.randomUUID().replaceAll("-", "");
     const csp = `default-src 'none'; img-src ${panel.webview.cspSource} data:; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';`;
-    const logoUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(this.ctx.extensionUri, "media", "logo.svg"));
+    const logoUri = panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(this.ctx.extensionUri, "media", "logo.svg"),
+    );
     panel.webview.html = getWebviewHtml(nonce, csp, logoUri.toString());
     panel.webview.onDidReceiveMessage((m: WebviewMessage) => this.onMessage(m));
     setTimeout(() => {
@@ -129,7 +163,9 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
   async exportTranscript(): Promise<void> {
     const msgs = this.messages.filter((m) => m.role !== "system");
     if (!msgs.length) {
-      vscode.window.showInformationMessage("Bailu Agent: No messages to export.");
+      vscode.window.showInformationMessage(
+        "Bailu Agent: No messages to export.",
+      );
       return;
     }
     const lines: string[] = [
@@ -137,10 +173,14 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
       `> Exported: ${new Date().toISOString()}`,
       `> Model: ${cfg().get<string>("model") || "bailu-auto"}`,
       `> Mode: ${cfg().get<string>("mode") || "code"}`,
-      ""
+      "",
     ];
     for (const m of msgs) {
-      lines.push(`## ${m.role === "user" ? "👤 User" : "🤖 Bailu"}`, m.content, "");
+      lines.push(
+        `## ${m.role === "user" ? "👤 User" : "🤖 Bailu"}`,
+        m.content,
+        "",
+      );
     }
     const md = lines.join("\n");
     const folders = vscode.workspace.workspaceFolders;
@@ -153,9 +193,15 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
       this.post({ type: "status", text: "Transcript exported → " + fname });
     } else {
       /* No workspace — show in untitled editor */
-      const doc = await vscode.workspace.openTextDocument({ language: "markdown", content: md });
+      const doc = await vscode.workspace.openTextDocument({
+        language: "markdown",
+        content: md,
+      });
       await vscode.window.showTextDocument(doc);
-      this.post({ type: "status", text: "Transcript opened (no workspace to save)" });
+      this.post({
+        type: "status",
+        text: "Transcript opened (no workspace to save)",
+      });
     }
   }
 
@@ -166,15 +212,20 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
       timestamp: new Date().toISOString(),
       model: cfg().get<string>("model") || "bailu-auto",
       mode: cfg().get<string>("mode") || "code",
-      messages: this.messages
+      messages: this.messages,
     };
     const snapDir = home.snapshotDir();
     try {
       fs.mkdirSync(snapDir, { recursive: true });
       const file = path.join(snapDir, `snap-${stamp}.json`);
       fs.writeFileSync(file, JSON.stringify(snap, null, 2), "utf8");
-      this.post({ type: "status", text: "Snapshot saved → " + `snap-${stamp}.json` });
-      vscode.window.showInformationMessage(`Bailu Agent: Snapshot saved as snap-${stamp}.json`);
+      this.post({
+        type: "status",
+        text: "Snapshot saved → " + `snap-${stamp}.json`,
+      });
+      vscode.window.showInformationMessage(
+        `Bailu Agent: Snapshot saved as snap-${stamp}.json`,
+      );
     } catch (e) {
       this.post({ type: "error", text: "Snapshot failed: " + err(e) });
     }
@@ -206,7 +257,10 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
   private async userSearch(q: string): Promise<void> {
     const input = String(q || "").trim();
     if (!input) {
-      this.post({ type: "error", text: "Type a query or URL in the box, then press Web." });
+      this.post({
+        type: "error",
+        text: "Type a query or URL in the box, then press Web.",
+      });
       return;
     }
 
@@ -215,9 +269,14 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
       this.post({ type: "status", text: "Crawling page via TinyFish…" });
       try {
         const content = await tinyfishFetch(targetUrl);
-        this.post({ type: "searchResult", text: `[TinyFish Scraper]\nSource: ${targetUrl}\n\n${content.slice(0, 1200)}...` });
+        this.post({
+          type: "searchResult",
+          text: `[TinyFish Scraper]\nSource: ${targetUrl}\n\n${content.slice(0, 1200)}...`,
+        });
         this.post({ type: "status", text: "Page crawled — asking model" });
-        await this.chat(`Scraped content from URL (${targetUrl}):\n\n${content}\n\nAnalyze and summarize the information from this webpage.`);
+        await this.chat(
+          `Scraped content from URL (${targetUrl}):\n\n${content}\n\nAnalyze and summarize the information from this webpage.`,
+        );
       } catch (e) {
         this.post({ type: "error", text: err(e) });
       }
@@ -230,7 +289,13 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
       const result = await tinyfishSearch(query);
       this.post({ type: "searchResult", text: result });
       this.post({ type: "status", text: "Search done — asking model" });
-      await this.chat("Live web results for: " + query + "\n\n" + result + "\n\nAnswer the query using these results. Cite URLs.");
+      await this.chat(
+        "Live web results for: " +
+          query +
+          "\n\n" +
+          result +
+          "\n\nAnswer the query using these results. Cite URLs.",
+      );
     } catch (e) {
       this.post({ type: "error", text: err(e) });
     }
@@ -278,27 +343,46 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
         break;
       case "setModel":
         if (m.model) {
-          await cfg().update("model", m.model, vscode.ConfigurationTarget.Global);
+          await cfg().update(
+            "model",
+            m.model,
+            vscode.ConfigurationTarget.Global,
+          );
           persistHomeFromVscode();
         }
         break;
       case "setThinking":
-        if (isThinking(m.thinking)) await cfg().update("thinking", m.thinking, vscode.ConfigurationTarget.Global);
+        if (isThinking(m.thinking))
+          await cfg().update(
+            "thinking",
+            m.thinking,
+            vscode.ConfigurationTarget.Global,
+          );
         break;
       case "setLocale":
         if (m.locale === "en" || m.locale === "id") {
-          await cfg().update("locale", m.locale, vscode.ConfigurationTarget.Global);
+          await cfg().update(
+            "locale",
+            m.locale,
+            vscode.ConfigurationTarget.Global,
+          );
         }
         break;
       case "webSearch":
         await this.userSearch(m.text || m.query || "");
         break;
       case "toggleBookmark":
-        await this.toggleBookmark(m.model || cfg().get<string>("model") || "bailu-auto");
+        await this.toggleBookmark(
+          m.model || cfg().get<string>("model") || "bailu-auto",
+        );
         break;
       case "setTheme":
         if (m.theme === "auto" || m.theme === "dark" || m.theme === "light") {
-          await cfg().update("theme", m.theme, vscode.ConfigurationTarget.Global);
+          await cfg().update(
+            "theme",
+            m.theme,
+            vscode.ConfigurationTarget.Global,
+          );
           persistHomeFromVscode();
         }
         break;
@@ -322,7 +406,9 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
         break;
       case "openUrl":
         if (m.url && /^https:\/\/alsyundawy\.com\/?$/i.test(m.url)) {
-          await vscode.env.openExternal(vscode.Uri.parse("https://alsyundawy.com"));
+          await vscode.env.openExternal(
+            vscode.Uri.parse("https://alsyundawy.com"),
+          );
         }
         break;
     }
@@ -348,7 +434,7 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
       tinyfishApiKey: userTinyfish,
       usage: home.loadUsage(),
       homeDir: home.homeDir(),
-      booted: this.messages.length > 0
+      booted: this.messages.length > 0,
     });
     if (!this.messages.length) this.reset();
   }
@@ -361,16 +447,31 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
     if (m.tinyfishApiKey !== undefined) {
       const rawTf = m.tinyfishApiKey.trim();
       if (!isMaskedSecret(rawTf)) {
-        await cfg().update("tinyfishApiKey", rawTf, vscode.ConfigurationTarget.Global);
+        await cfg().update(
+          "tinyfishApiKey",
+          rawTf,
+          vscode.ConfigurationTarget.Global,
+        );
       }
     }
   }
 
-  private async updateGeneralPreferences(m: SettingsMessage, base: string): Promise<void> {
-    if (base) await cfg().update("baseUrl", base, vscode.ConfigurationTarget.Global);
-    if (m.model) await cfg().update("model", m.model, vscode.ConfigurationTarget.Global);
-    if (isThinking(m.thinking)) await cfg().update("thinking", m.thinking, vscode.ConfigurationTarget.Global);
-    if (m.locale === "en" || m.locale === "id") await cfg().update("locale", m.locale, vscode.ConfigurationTarget.Global);
+  private async updateGeneralPreferences(
+    m: SettingsMessage,
+    base: string,
+  ): Promise<void> {
+    if (base)
+      await cfg().update("baseUrl", base, vscode.ConfigurationTarget.Global);
+    if (m.model)
+      await cfg().update("model", m.model, vscode.ConfigurationTarget.Global);
+    if (isThinking(m.thinking))
+      await cfg().update(
+        "thinking",
+        m.thinking,
+        vscode.ConfigurationTarget.Global,
+      );
+    if (m.locale === "en" || m.locale === "id")
+      await cfg().update("locale", m.locale, vscode.ConfigurationTarget.Global);
     if (m.theme === "auto" || m.theme === "dark" || m.theme === "light") {
       await cfg().update("theme", m.theme, vscode.ConfigurationTarget.Global);
     }
@@ -379,8 +480,14 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
   private async testConnection(selectedModel?: string): Promise<boolean> {
     try {
       const n = await this.pingModels();
-      this.post({ type: "setStatus", text: "Connected. " + n + " model dari API." });
-      this.post({ type: "status", text: "Token OK · " + (selectedModel || cfg().get("model")) });
+      this.post({
+        type: "setStatus",
+        text: "Connected. " + n + " model dari API.",
+      });
+      this.post({
+        type: "status",
+        text: "Token OK · " + (selectedModel || cfg().get("model")),
+      });
       return true;
     } catch (e) {
       this.post({ type: "setStatus", text: "Test failed: " + err(e) });
@@ -392,9 +499,15 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
     const msg = connected
       ? "Bailu Agent: Settings saved & connection OK. Restart to apply all changes."
       : "Bailu Agent: Settings saved. Restart Extension Host to apply changes.";
-    const action = await vscode.window.showInformationMessage(msg, "Restart Extension Host", "Later");
+    const action = await vscode.window.showInformationMessage(
+      msg,
+      "Restart Extension Host",
+      "Later",
+    );
     if (action === "Restart Extension Host") {
-      await vscode.commands.executeCommand("workbench.action.restartExtensionHost");
+      await vscode.commands.executeCommand(
+        "workbench.action.restartExtensionHost",
+      );
     }
   }
 
@@ -402,7 +515,10 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
     await this.updateApiCredentials(m);
     const base = normalizeBase(m.baseUrl || "");
     if (base && !isAllowedBase(base)) {
-      this.post({ type: "setStatus", text: "Invalid Base URL. Use an http(s) URL." });
+      this.post({
+        type: "setStatus",
+        text: "Invalid Base URL. Use an http(s) URL.",
+      });
       return;
     }
     await this.updateGeneralPreferences(m, base);
@@ -412,7 +528,6 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
     await this.promptRestartOnSave(connected);
   }
 
-
   private async pingModels(): Promise<number> {
     const token = await this.ctx.secrets.get(SECRET_KEY);
     if (!token) throw new Error("Token kosong");
@@ -421,10 +536,16 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
     const t = setTimeout(() => ac.abort(), 20000);
     try {
       const res = await fetch(base + "/models", {
-        headers: { Authorization: "Bearer " + token, Accept: "application/json" },
-        signal: ac.signal
+        headers: {
+          Authorization: "Bearer " + token,
+          Accept: "application/json",
+        },
+        signal: ac.signal,
       });
-      if (!res.ok) throw new Error("HTTP " + res.status + " " + (await res.text()).slice(0, 200));
+      if (!res.ok)
+        throw new Error(
+          "HTTP " + res.status + " " + (await res.text()).slice(0, 200),
+        );
       const json = (await res.json()) as { data?: { id: string }[] };
       return json.data?.length || 0;
     } finally {
@@ -436,7 +557,10 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
     if (this.streaming) return;
     const token = await this.ctx.secrets.get(SECRET_KEY);
     if (!token) {
-      this.post({ type: "error", text: "API token is missing. Open Settings." });
+      this.post({
+        type: "error",
+        text: "API token is missing. Open Settings.",
+      });
       return;
     }
     const trimmed = (text || "").trim();
@@ -465,10 +589,11 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
     const meta = CATALOG.find((x) => x.id === model);
     if (!this.messages.length) this.reset();
     const contextBlock = await buildEditorContext();
-    const userContent = contextBlock ? contextBlock + "\n\n" + enriched : enriched;
+    const userContent = contextBlock
+      ? contextBlock + "\n\n" + enriched
+      : enriched;
     this.messages.push({ role: "user", content: userContent });
     trimHistory(this.messages);
-
 
     this.abort?.abort();
     this.abort = new AbortController();
@@ -479,12 +604,14 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
     const configured = Number(cfg().get("maxTokens") || 0);
     const modelCap = Math.min(meta?.maxOut || 65536, MAX_OUT_CAP);
     const maxOut = configured > 0 ? Math.min(configured, modelCap) : modelCap;
-    const effortOk = ["instant", "low", "medium", "high", "max"].includes(thinking) && (meta?.thinking?.includes(thinking) ?? false);
+    const effortOk =
+      ["instant", "low", "medium", "high", "max"].includes(thinking) &&
+      (meta?.thinking?.includes(thinking) ?? false);
     const body: Record<string, unknown> = {
       model,
       messages: this.messages,
       stream: true,
-      max_tokens: maxOut
+      max_tokens: maxOut,
     };
     if (effortOk) body.reasoning_effort = thinking;
 
@@ -502,11 +629,16 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
     base: string,
     token: string,
     body: Record<string, unknown>,
-    model: string
+    model: string,
   ): Promise<void> {
     let full = await this.streamCompletion(base, token, body, model);
     if (!full) {
-      const plain = { model, messages: this.messages, stream: false, max_tokens: Math.min(Number(body.max_tokens) || 8192, MAX_OUT_CAP) };
+      const plain = {
+        model,
+        messages: this.messages,
+        stream: false,
+        max_tokens: Math.min(Number(body.max_tokens) || 8192, MAX_OUT_CAP),
+      };
       full = await this.jsonCompletion(base, token, plain);
       if (full) this.post({ type: "delta", text: full });
     }
@@ -514,10 +646,17 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
       this.messages.push({ role: "assistant", content: full });
       trimHistory(this.messages);
       const wrote = await applyGeneratedFiles(full);
-      if (wrote) this.post({ type: "status", text: model + " · wrote " + wrote + " file(s)" });
+      if (wrote)
+        this.post({
+          type: "status",
+          text: model + " · wrote " + wrote + " file(s)",
+        });
     } else {
       this.messages.pop();
-      this.post({ type: "error", text: "No text from " + model + ". Try Auto, or another model." });
+      this.post({
+        type: "error",
+        text: "No text from " + model + ". Try Auto, or another model.",
+      });
     }
     this.post({ type: "done" });
     this.post({ type: "status", text: model + " done" });
@@ -561,17 +700,17 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
     base: string,
     token: string,
     body: Record<string, unknown>,
-    model: string
+    model: string,
   ): Promise<string> {
     const res = await fetch(base + "/chat/completions", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + token,
         "Content-Type": "application/json",
-        Accept: "text/event-stream"
+        Accept: "text/event-stream",
       },
       body: JSON.stringify(body),
-      signal: this.abort?.signal
+      signal: this.abort?.signal,
     });
     if (!res.ok || !res.body) {
       const hint = await res.text().catch(() => "");
@@ -594,16 +733,20 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
     return full;
   }
 
-  private async jsonCompletion(base: string, token: string, body: Record<string, unknown>): Promise<string> {
+  private async jsonCompletion(
+    base: string,
+    token: string,
+    body: Record<string, unknown>,
+  ): Promise<string> {
     const res = await fetch(base + "/chat/completions", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + token,
         "Content-Type": "application/json",
-        Accept: "application/json"
+        Accept: "application/json",
       },
       body: JSON.stringify(body),
-      signal: this.abort?.signal
+      signal: this.abort?.signal,
     });
     if (!res.ok) {
       const hint = await res.text().catch(() => "");
@@ -615,7 +758,9 @@ class BailuViewProvider implements vscode.WebviewViewProvider, vscode.Disposable
 }
 
 function extractDelta(j: Record<string, unknown>): string {
-  const choices = j?.choices as { delta?: { content?: unknown; reasoning_content?: unknown } }[] | undefined;
+  const choices = j?.choices as
+    | { delta?: { content?: unknown; reasoning_content?: unknown } }[]
+    | undefined;
   const d = choices?.[0]?.delta;
   if (!d) return "";
   const raw = d.content;
@@ -636,7 +781,8 @@ function extractDelta(j: Record<string, unknown>): string {
 }
 
 function extractMessage(j: Record<string, unknown>): string {
-  const choices = j?.choices as { message?: { content?: unknown } }[] | undefined;
+  const choices = j?.choices as
+    { message?: { content?: unknown } }[] | undefined;
   const m = choices?.[0]?.message;
   if (!m) return "";
   if (typeof m.content === "string") return m.content;
@@ -655,20 +801,36 @@ function extractMessage(j: Record<string, unknown>): string {
   return "";
 }
 
-function extractUsage(j: Record<string, unknown>): Partial<home.UsageData> | null {
-  const u = j?.usage as { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } | undefined;
+function extractUsage(
+  j: Record<string, unknown>,
+): Partial<home.UsageData> | null {
+  const u = j?.usage as
+    | {
+        prompt_tokens?: number;
+        completion_tokens?: number;
+        total_tokens?: number;
+      }
+    | undefined;
   if (!u) return null;
   return {
     prompt_tokens: Number(u.prompt_tokens || 0),
     completion_tokens: Number(u.completion_tokens || 0),
-    total_tokens: Number(u.total_tokens || 0)
+    total_tokens: Number(u.total_tokens || 0),
   };
 }
 
 async function applyHomeToVscode(): Promise<void> {
   const h = home.loadHomeConfig();
   const c = cfg();
-  const keys = ["baseUrl", "model", "thinking", "mode", "locale", "theme", "tinyfishApiKey"] as const;
+  const keys = [
+    "baseUrl",
+    "model",
+    "thinking",
+    "mode",
+    "locale",
+    "theme",
+    "tinyfishApiKey",
+  ] as const;
   for (const k of keys) {
     const val = h[k];
     if (val != null && c.get(k) !== val) {
@@ -689,7 +851,7 @@ function persistHomeFromVscode(): void {
     locale: cfg().get("locale"),
     theme: cfg().get("theme"),
     tinyfishApiKey: getTinyfishKey(),
-    bookmarks: cfg().get<string[]>("bookmarks") || []
+    bookmarks: cfg().get<string[]>("bookmarks") || [],
   });
 }
 
@@ -702,16 +864,20 @@ async function buildEditorContext(): Promise<string> {
     try {
       const srcUri = vscode.Uri.joinPath(root.uri, "src");
       const listing = await listShallowSrc(srcUri);
-      if (listing.length) parts.push("src/ entries:\n" + listing.map((p) => "- " + p).join("\n"));
+      if (listing.length)
+        parts.push("src/ entries:\n" + listing.map((p) => "- " + p).join("\n"));
     } catch {
       /* no src folder */
     }
   }
   const ed = vscode.window.activeTextEditor;
   if (ed) {
-    const rel = folders?.length ? vscode.workspace.asRelativePath(ed.document.uri) : ed.document.fileName;
+    const rel = folders?.length
+      ? vscode.workspace.asRelativePath(ed.document.uri)
+      : ed.document.fileName;
     let body = ed.document.getText();
-    if (body.length > MAX_ACTIVE_CHARS) body = body.slice(0, MAX_ACTIVE_CHARS) + "\n…[truncated]";
+    if (body.length > MAX_ACTIVE_CHARS)
+      body = body.slice(0, MAX_ACTIVE_CHARS) + "\n…[truncated]";
     parts.push("Active file: " + rel + "\n```\n" + body + "\n```");
   }
   return parts.length ? "IDE context:\n" + parts.join("\n\n") : "";
@@ -727,7 +893,9 @@ async function listShallowSrc(dir: vscode.Uri): Promise<string[]> {
   }
   for (const [name, type] of entries) {
     if (name.startsWith(".")) continue;
-    out.push(type === vscode.FileType.Directory ? "src/" + name + "/" : "src/" + name);
+    out.push(
+      type === vscode.FileType.Directory ? "src/" + name + "/" : "src/" + name,
+    );
     if (out.length >= 80) break;
   }
   return out;
@@ -736,10 +904,22 @@ async function listShallowSrc(dir: vscode.Uri): Promise<string[]> {
 async function applyGeneratedFiles(text: string): Promise<number> {
   const folders = vscode.workspace.workspaceFolders;
   if (!folders?.length) return 0;
+  const currentMode = cfg().get<string>("mode") || "code";
+  if (currentMode === "ask" || currentMode === "plan") {
+    // In Ask or Plan mode, never auto-write files to disk
+    return 0;
+  }
   const files = parseFenceFiles(text);
   let n = 0;
   for (const f of files) {
-    if (!f.path || f.path.includes("..") || f.path.startsWith("/") || f.path.startsWith("\\") || f.path.includes(":")) continue;
+    if (
+      !f.path ||
+      f.path.includes("..") ||
+      f.path.startsWith("/") ||
+      f.path.startsWith("\\") ||
+      f.path.includes(":")
+    )
+      continue;
     const uri = vscode.Uri.joinPath(folders[0].uri, f.path);
     try {
       const parentUri = vscode.Uri.joinPath(uri, "..");
@@ -756,10 +936,31 @@ async function applyGeneratedFiles(text: string): Promise<number> {
 }
 
 function extractFencePath(header: string): string {
-  const stripped = header.replace(/^File:\s*/i, "").replace(/^[a-zA-Z0-9_-]+:/, "");
+  const stripped = header
+    .replace(/^File:\s*/i, "")
+    .replace(/^[a-zA-Z0-9_-]+:/, "");
   const tokens = stripped.split(/\s+/);
   const candidate = (tokens.at(-1) || "").replace(/^['"`]|['"`]$/g, "");
-  if (candidate?.includes(".") && candidate.length < 200 && !candidate.includes("`")) {
+  if (
+    candidate?.includes(".") &&
+    candidate.length < 200 &&
+    !candidate.includes("`")
+  ) {
+    const knownLanguages = [
+      "vue.js",
+      "chart.js",
+      "three.js",
+      "d3.js",
+      "moment.js",
+      "highlight.js",
+    ];
+    if (
+      knownLanguages.includes(candidate.toLowerCase()) &&
+      !header.toLowerCase().includes("file") &&
+      !candidate.includes("/")
+    ) {
+      return "";
+    }
     return candidate;
   }
   return "";
@@ -829,7 +1030,10 @@ function isMaskedSecret(val: string): boolean {
 }
 
 function isThinking(v: string | undefined): v is Thinking {
-  return !!v && ["auto", "instant", "low", "medium", "high", "max", "off"].includes(v);
+  return (
+    !!v &&
+    ["auto", "instant", "low", "medium", "high", "max", "off"].includes(v)
+  );
 }
 
 function trimHistory(msgs: { role: string; content: string }[]): void {
@@ -852,11 +1056,14 @@ function parseDdgJson(raw: string): string {
   };
   const lines: string[] = [];
   if (j.Heading || j.AbstractText) {
-    lines.push((j.Heading || "Result") + (j.AbstractURL ? " — " + j.AbstractURL : ""));
+    lines.push(
+      (j.Heading || "Result") + (j.AbstractURL ? " — " + j.AbstractURL : ""),
+    );
     if (j.AbstractText) lines.push(j.AbstractText);
   }
   for (const t of j.RelatedTopics || []) {
-    if (t?.Text) lines.push("- " + t.Text + (t.FirstURL ? " (" + t.FirstURL + ")" : ""));
+    if (t?.Text)
+      lines.push("- " + t.Text + (t.FirstURL ? " (" + t.FirstURL + ")" : ""));
     if (lines.length >= 8) break;
   }
   return lines.join("\n");
@@ -889,7 +1096,14 @@ function extractTargetUrl(input: string): string | null {
 }
 
 function parseTinyfishSearchResults(data: unknown): string {
-  const j = data as { results?: { position?: number; title?: string; url?: string; snippet?: string }[] };
+  const j = data as {
+    results?: {
+      position?: number;
+      title?: string;
+      url?: string;
+      snippet?: string;
+    }[];
+  };
   const items = j?.results;
   if (!Array.isArray(items) || !items.length) return "";
   const lines: string[] = [];
@@ -906,7 +1120,8 @@ function parseTinyfishSearchResults(data: unknown): string {
 async function tinyfishSearch(query: string): Promise<string> {
   const key = getTinyfishKey();
   if (key) {
-    const url = "https://api.search.tinyfish.ai?query=" + encodeURIComponent(query);
+    const url =
+      "https://api.search.tinyfish.ai?query=" + encodeURIComponent(query);
     const ac = new AbortController();
     const t = setTimeout(() => ac.abort(), 12000);
     try {
@@ -914,9 +1129,9 @@ async function tinyfishSearch(query: string): Promise<string> {
         headers: {
           "X-API-Key": key,
           "User-Agent": "Mozilla/5.0 (compatible; BailuAgent/1.1.8)",
-          Accept: "application/json"
+          Accept: "application/json",
         },
-        signal: ac.signal
+        signal: ac.signal,
       });
       if (!res.ok) throw new Error("TinyFish Search HTTP " + res.status);
       const j = await res.json();
@@ -933,7 +1148,12 @@ async function tinyfishSearch(query: string): Promise<string> {
 
 function parseTinyfishFetchResults(data: unknown): string {
   const j = data as {
-    results?: { title?: string; url?: string; text?: string; description?: string }[];
+    results?: {
+      title?: string;
+      url?: string;
+      text?: string;
+      description?: string;
+    }[];
   };
   const first = j?.results?.[0];
   if (!first?.text) return "";
@@ -954,10 +1174,10 @@ async function tinyfishFetch(targetUrl: string): Promise<string> {
           "X-API-Key": key,
           "Content-Type": "application/json",
           "User-Agent": "Mozilla/5.0 (compatible; BailuAgent/1.1.8)",
-          Accept: "application/json"
+          Accept: "application/json",
         },
         body: JSON.stringify({ urls: [targetUrl] }),
-        signal: ac.signal
+        signal: ac.signal,
       });
       if (!res.ok) throw new Error("TinyFish Fetch HTTP " + res.status);
       const j = await res.json();
@@ -981,8 +1201,10 @@ async function tinyfishFetch(targetUrl: string): Promise<string> {
 async function ddgSearch(query: string): Promise<string> {
   try {
     const lite = await fetchText(
-      "https://api.duckduckgo.com/?q=" + encodeURIComponent(query) + "&format=json&no_html=1&skip_disambig=1",
-      10000
+      "https://api.duckduckgo.com/?q=" +
+        encodeURIComponent(query) +
+        "&format=json&no_html=1&skip_disambig=1",
+      10000,
     );
     const text = parseDdgJson(lite);
     if (text) return text;
@@ -990,16 +1212,18 @@ async function ddgSearch(query: string): Promise<string> {
     /* ignore json api error and fallback to html */
   }
 
-  const url = "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(query);
+  const url =
+    "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(query);
   const ac = new AbortController();
   const t = setTimeout(() => ac.abort(), 15000);
   try {
     const res = await fetch(url, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; BailuAgent/1.1.8; +https://bailucode.com) AppleWebKit/537.36",
-        Accept: "text/html"
+        "User-Agent":
+          "Mozilla/5.0 (compatible; BailuAgent/1.1.8; +https://bailucode.com) AppleWebKit/537.36",
+        Accept: "text/html",
       },
-      signal: ac.signal
+      signal: ac.signal,
     });
     if (!res.ok) throw new Error("HTTP " + res.status);
     const html = await res.text();
@@ -1056,7 +1280,10 @@ function parseDdgHtml(html: string): string {
       pos = classIdx + linkMarker.length;
       continue;
     }
-    const item = extractDdgResult(html.slice(tagStart, tagEnd + 4), out.length + 1);
+    const item = extractDdgResult(
+      html.slice(tagStart, tagEnd + 4),
+      out.length + 1,
+    );
     if (item) {
       out.push(item);
     }
@@ -1070,8 +1297,12 @@ async function fetchText(url: string, ms: number): Promise<string> {
   const t = setTimeout(() => ac.abort(), ms);
   try {
     const res = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; BailuAgent/1.1.8; +https://bailucode.com) AppleWebKit/537.36", Accept: "application/json,text/html" },
-      signal: ac.signal
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (compatible; BailuAgent/1.1.8; +https://bailucode.com) AppleWebKit/537.36",
+        Accept: "application/json,text/html",
+      },
+      signal: ac.signal,
     });
     if (!res.ok) throw new Error("HTTP " + res.status);
     return await res.text();

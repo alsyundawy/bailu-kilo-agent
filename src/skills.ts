@@ -24,46 +24,94 @@ export function builtinSkills(): SkillInfo[] {
   return [
     {
       name: "superpowers:systematic-debugging",
-      description: "Root cause investigation across 4 phases: Investigate, Analyze, Hypothesize, Fix & Verify. Never guess blindly.",
-      body: "Phase 1: Reproduce and isolate the exact defect with minimal test.\nPhase 2: Analyze execution flow and data states to find root cause.\nPhase 3: Formulate a single, minimal hypothesis addressing the root cause.\nPhase 4: Implement minimal fix, verify against test, ensure no regressions."
+      description:
+        "Root cause investigation across 4 phases: Investigate, Analyze, Hypothesize, Fix & Verify. Never guess blindly.",
+      body: "Phase 1: Reproduce and isolate the exact defect with minimal test.\nPhase 2: Analyze execution flow and data states to find root cause.\nPhase 3: Formulate a single, minimal hypothesis addressing the root cause.\nPhase 4: Implement minimal fix, verify against test, ensure no regressions.",
     },
     {
       name: "superpowers:test-driven-development",
-      description: "Red-Green-Refactor development cycle. Verify failure before writing implementation.",
-      body: "1. Red: Write a concise failing test/assertion for the new behavior.\n2. Verify: Run the test to confirm it fails for the expected reason.\n3. Green: Write the minimal code to pass.\n4. Refactor: Clean up code while keeping tests green."
+      description:
+        "Red-Green-Refactor development cycle. Verify failure before writing implementation.",
+      body: "1. Red: Write a concise failing test/assertion for the new behavior.\n2. Verify: Run the test to confirm it fails for the expected reason.\n3. Green: Write the minimal code to pass.\n4. Refactor: Clean up code while keeping tests green.",
     },
     {
       name: "superpowers:verification-before-completion",
-      description: "Evidence before assertions. Always run build, test, and typecheck before claiming done.",
-      body: "Never claim code is fixed, tests pass, or feature is complete without running verification commands and confirming actual terminal output and exit code 0."
+      description:
+        "Evidence before assertions. Always run build, test, and typecheck before claiming done.",
+      body: "Never claim code is fixed, tests pass, or feature is complete without running verification commands and confirming actual terminal output and exit code 0.",
     },
     {
       name: "agent-skills:code-simplification",
-      description: "Strip cognitive complexity, remove redundant layers, keep code readable and maintainable.",
-      body: "Simplify logic for clarity without altering behavior. Remove dead code, avoid over-engineering, and keep functions focused on a single responsibility."
-    }
+      description:
+        "Strip cognitive complexity, remove redundant layers, keep code readable and maintainable.",
+      body: "Simplify logic for clarity without altering behavior. Remove dead code, avoid over-engineering, and keep functions focused on a single responsibility.",
+    },
   ];
 }
 
 export function builtinAgents(): AgentInfo[] {
   return [
-    { id: "code", name: "Code", description: "Implement and edit code", body: "", builtin: true },
-    { id: "plan", name: "Plan", description: "Architecture and implementation plan", body: "", builtin: true },
-    { id: "ask", name: "Ask", description: "Answer without changing files", body: "", builtin: true },
-    { id: "debug", name: "Debug", description: "Trace and fix defects", body: "", builtin: true },
-    { id: "review", name: "Review", description: "Review quality, security, tests", body: "", builtin: true },
-    { id: "arch", name: "Arch", description: "System architecture design and ADRs", body: "", builtin: true }
+    {
+      id: "code",
+      name: "Code",
+      description: "Implement and edit code",
+      body: "",
+      builtin: true,
+    },
+    {
+      id: "plan",
+      name: "Plan",
+      description: "Architecture and implementation plan",
+      body: "",
+      builtin: true,
+    },
+    {
+      id: "ask",
+      name: "Ask",
+      description: "Answer without changing files",
+      body: "",
+      builtin: true,
+    },
+    {
+      id: "debug",
+      name: "Debug",
+      description: "Trace and fix defects",
+      body: "",
+      builtin: true,
+    },
+    {
+      id: "review",
+      name: "Review",
+      description: "Review quality, security, tests",
+      body: "",
+      builtin: true,
+    },
+    {
+      id: "arch",
+      name: "Arch",
+      description: "System architecture design and ADRs",
+      body: "",
+      builtin: true,
+    },
   ];
 }
 
 /** Look up a skill by name (exact or prefix match). Used for @skill: mention injection. */
-export function lookupSkill(name: string, extras: { skills: SkillInfo[] }): SkillInfo | undefined {
+export function lookupSkill(
+  name: string,
+  extras: { skills: SkillInfo[] },
+): SkillInfo | undefined {
   const q = name.toLowerCase().trim();
-  return extras.skills.find((s) => s.name.toLowerCase() === q) ||
-    extras.skills.find((s) => s.name.toLowerCase().includes(q));
+  return (
+    extras.skills.find((s) => s.name.toLowerCase() === q) ||
+    extras.skills.find((s) => s.name.toLowerCase().includes(q))
+  );
 }
 
-export function loadWorkspaceExtras(): { skills: SkillInfo[]; agents: AgentInfo[] } {
+export function loadWorkspaceExtras(): {
+  skills: SkillInfo[];
+  agents: AgentInfo[];
+} {
   const roots: string[] = [];
   for (const f of vscode.workspace.workspaceFolders || []) {
     if (f.uri?.scheme === "file" && f.uri.fsPath) {
@@ -91,7 +139,7 @@ export function loadWorkspaceExtras(): { skills: SkillInfo[]; agents: AgentInfo[
     // 4. Compatibility paths
     ".kilo/skills",
     ".kilocode/skills",
-    ".grok/skills"
+    ".grok/skills",
   ];
   const agentDirs = [
     // Antigravity & Agent Personas (Global & Local)
@@ -104,7 +152,7 @@ export function loadWorkspaceExtras(): { skills: SkillInfo[]; agents: AgentInfo[
     ".bailucode/agents",
     ".kilo/agents",
     ".kilo/agent",
-    ".kilocode/agents"
+    ".kilocode/agents",
   ];
 
   for (const root of roots) {
@@ -140,7 +188,7 @@ function collectSkills(dir: string, out: SkillInfo[], seen: Set<string>): void {
     out.push({
       name,
       description: (meta.description || "").slice(0, 240),
-      body: stripFront(raw).slice(0, 2500)
+      body: stripFront(raw).slice(0, 2500),
     });
     if (out.length >= 400) return;
   }
@@ -162,7 +210,9 @@ function collectAgents(dir: string, out: AgentInfo[], seen: Set<string>): void {
     const raw = readCapped(file, 6000);
     if (!raw) continue;
     const meta = parseFront(raw);
-    const id = (meta.name || e.name.replace(/\.md$/i, "")).toLowerCase().replace(/[^a-z0-9._-]+/g, "-");
+    const id = (meta.name || e.name.replace(/\.md$/i, ""))
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]+/g, "-");
     if (!id || seen.has(id)) continue;
     seen.add(id);
     out.push({
@@ -170,7 +220,7 @@ function collectAgents(dir: string, out: AgentInfo[], seen: Set<string>): void {
       name: meta.name || e.name.replace(/\.md$/i, ""),
       description: (meta.description || "").slice(0, 240),
       body: stripFront(raw).slice(0, 3500),
-      builtin: false
+      builtin: false,
     });
     if (out.length >= 50) return;
   }
@@ -180,7 +230,7 @@ export function buildSystemPrompt(
   mode: string,
   locale: string,
   extras: { skills: SkillInfo[]; agents: AgentInfo[] },
-  basePrompt: string
+  basePrompt: string,
 ): string {
   const parts = [LANG_LOCK, basePrompt];
   const custom = extras.agents.find((a) => a.id === mode && !a.builtin);
@@ -189,37 +239,50 @@ export function buildSystemPrompt(
   }
   if (mode === "debug") {
     parts.push(
-      "Debug agent: execute Antigravity 4-phase systematic debugging (Investigate, Analyze, Hypothesize, Fix & Verify). Isolate defects with evidence and propose minimal verified fixes."
+      "Debug agent: execute Antigravity 4-phase systematic debugging (Investigate, Analyze, Hypothesize, Fix & Verify). Isolate defects with evidence and propose minimal verified fixes.",
     );
   }
   if (mode === "review") {
     parts.push(
-      "Review agent: execute Antigravity 5-dimension review (Correctness, Readability, Architecture, Security, Performance). List findings prioritized by severity."
+      "Review agent: execute Antigravity 5-dimension review (Correctness, Readability, Architecture, Security, Performance). List findings prioritized by severity.",
     );
   }
   if (mode === "arch") {
     parts.push(
-      "Architect agent: design systems using Antigravity architecture patterns. Produce C4 Context/Container/Component diagrams in Mermaid, Architecture Decision Records (ADRs), and component boundary definitions. Apply Clean Architecture, Hexagonal Architecture, or Domain-Driven Design as appropriate. Focus on scalability, maintainability, and testability."
+      "Architect agent: design systems using Antigravity architecture patterns. Produce C4 Context/Container/Component diagrams in Mermaid, Architecture Decision Records (ADRs), and component boundary definitions. Apply Clean Architecture, Hexagonal Architecture, or Domain-Driven Design as appropriate. Focus on scalability, maintainability, and testability.",
     );
   }
   if (extras.skills.length) {
     const primary = extras.skills.slice(0, 16);
     const catalog = primary
-      .map((s) => "- " + s.name + ": " + (s.description || s.body.slice(0, 100)))
+      .map(
+        (s) => "- " + s.name + ": " + (s.description || s.body.slice(0, 100)),
+      )
       .join("\n");
     let summary = `Antigravity & Agent Skills Vault (${extras.skills.length} available skills):\n${catalog}`;
     if (extras.skills.length > 16) {
-      const more = extras.skills.slice(16, 75).map((s) => s.name).join(", ");
-      const moreSuffix = extras.skills.length > 75 ? ` ...and ${extras.skills.length - 75} more` : "";
+      const more = extras.skills
+        .slice(16, 75)
+        .map((s) => s.name)
+        .join(", ");
+      const moreSuffix =
+        extras.skills.length > 75
+          ? ` ...and ${extras.skills.length - 75} more`
+          : "";
       summary += `\n- Additional specialized skills: ${more}${moreSuffix}`;
     }
     parts.push(summary);
 
-    const top = extras.skills.slice(0, 4).map((s) => `## Skill: ${s.name}\n${s.body}`).join("\n\n");
+    const top = extras.skills
+      .slice(0, 4)
+      .map((s) => `## Skill: ${s.name}\n${s.body}`)
+      .join("\n\n");
     if (top) parts.push(top.slice(0, 4000));
   }
   if (locale === "id") {
-    parts.push("The UI language is Indonesian. Prefer Bahasa Indonesia in replies.");
+    parts.push(
+      "The UI language is Indonesian. Prefer Bahasa Indonesia in replies.",
+    );
   } else {
     parts.push("The UI language is English. Prefer English in replies.");
   }
@@ -236,7 +299,10 @@ function parseFront(raw: string): Record<string, string> {
     const i = line.indexOf(":");
     if (i < 1) continue;
     const k = line.slice(0, i).trim().toLowerCase();
-    const v = line.slice(i + 1).trim().replace(/^["']|["']$/g, "");
+    const v = line
+      .slice(i + 1)
+      .trim()
+      .replace(/^["']|["']$/g, "");
     if (k) out[k] = v;
   }
   return out;
@@ -246,7 +312,10 @@ function stripFront(raw: string): string {
   if (!raw.startsWith("---")) return raw.trim();
   const endIdx = raw.indexOf("\n---", 3);
   if (endIdx === -1) return raw.trim();
-  return raw.slice(endIdx + 4).replace(/^\s*/, "").trim();
+  return raw
+    .slice(endIdx + 4)
+    .replace(/^\s*/, "")
+    .trim();
 }
 
 function readCapped(file: string, max: number): string {

@@ -31,7 +31,12 @@ export function homeDir(): string {
 }
 
 export function ensureHome(): string {
-  const dirs = [HOME, path.join(HOME, "skills"), path.join(HOME, "agents"), path.join(HOME, "config")];
+  const dirs = [
+    HOME,
+    path.join(HOME, "skills"),
+    path.join(HOME, "agents"),
+    path.join(HOME, "config"),
+  ];
   for (const d of dirs) {
     try {
       if (!fs.existsSync(d)) {
@@ -47,7 +52,7 @@ export function ensureHome(): string {
       fs.writeFileSync(
         readme,
         "# ~/.bailucode\n\nGlobal Bailu Agent home (survives extension updates).\n\n- config.json — model, theme, bookmarks, baseUrl, locale\n- usage.json — last token usage\n- skills/<name>/SKILL.md\n- agents/<name>.md\n",
-        "utf8"
+        "utf8",
       );
     } catch {
       /* ignore file write errors */
@@ -56,7 +61,10 @@ export function ensureHome(): string {
   const cfg = path.join(HOME, "config.json");
   if (!fs.existsSync(cfg)) {
     try {
-      fs.writeFileSync(cfg, JSON.stringify(defaultConfig(), null, 2), { encoding: "utf8", mode: 0o600 });
+      fs.writeFileSync(cfg, JSON.stringify(defaultConfig(), null, 2), {
+        encoding: "utf8",
+        mode: 0o600,
+      });
     } catch {
       /* ignore file write errors */
     }
@@ -73,7 +81,7 @@ export function defaultConfig(): HomeConfig {
     locale: "en",
     theme: "auto",
     bookmarks: ["bailu-auto"],
-    tinyfishApiKey: ""
+    tinyfishApiKey: "",
   };
 }
 
@@ -91,12 +99,18 @@ function readJson<T>(file: string, fallback: T): T {
 
 function writeJson(file: string, obj: unknown): void {
   ensureHome();
-  fs.writeFileSync(file, JSON.stringify(obj, null, 2), { encoding: "utf8", mode: 0o600 });
+  fs.writeFileSync(file, JSON.stringify(obj, null, 2), {
+    encoding: "utf8",
+    mode: 0o600,
+  });
 }
 
 export function loadHomeConfig(): HomeConfig {
   ensureHome();
-  const saved = readJson<Partial<HomeConfig> | null>(path.join(HOME, "config.json"), null);
+  const saved = readJson<Partial<HomeConfig> | null>(
+    path.join(HOME, "config.json"),
+    null,
+  );
   return saved ? { ...defaultConfig(), ...saved } : defaultConfig();
 }
 
@@ -114,7 +128,7 @@ export function loadUsage(): UsageData {
     completion_tokens: 0,
     total_tokens: 0,
     last_model: "",
-    updated: ""
+    updated: "",
   });
 }
 
@@ -123,11 +137,16 @@ export function saveUsage(u: Partial<UsageData>): UsageData {
   const next: UsageData = {
     prompt_tokens: Number(u.prompt_tokens || 0),
     completion_tokens: Number(u.completion_tokens || 0),
-    total_tokens: Number(u.total_tokens || (Number(u.prompt_tokens || 0) + Number(u.completion_tokens || 0))),
+    total_tokens: Number(
+      u.total_tokens ||
+        Number(u.prompt_tokens || 0) + Number(u.completion_tokens || 0),
+    ),
     last_model: String(u.last_model || prev.last_model || ""),
     updated: new Date().toISOString(),
-    lifetime_prompt: Number(prev.lifetime_prompt || 0) + Number(u.prompt_tokens || 0),
-    lifetime_completion: Number(prev.lifetime_completion || 0) + Number(u.completion_tokens || 0)
+    lifetime_prompt:
+      Number(prev.lifetime_prompt || 0) + Number(u.prompt_tokens || 0),
+    lifetime_completion:
+      Number(prev.lifetime_completion || 0) + Number(u.completion_tokens || 0),
   };
   writeJson(path.join(HOME, "usage.json"), next);
   return next;

@@ -3,7 +3,15 @@
   "displayName": "Bailu Agent",
   "description": "Agentic coding sidebar for BAILU AI — Kilo-style panel, model picker, Auto, thinking, API token.",
   "version": "1.1.8",
-  "files": ["out/**", "media/**", "AUTHOR.md", "README.md", "CHANGELOG.md", "DOCNOTE.md", "LICENSE"],
+  "files": [
+    "out/**",
+    "media/**",
+    "AUTHOR.md",
+    "README.md",
+    "CHANGELOG.md",
+    "DOCNOTE.md",
+    "LICENSE"
+  ],
   "publisher": "alsyundawy",
   "author": {
     "name": "Harry DS Alsyundawy",
@@ -29,7 +37,11 @@
     "workspace",
     "ui"
   ],
-  "categories": ["Machine Learning", "Programming Languages", "Other"],
+  "categories": [
+    "Machine Learning",
+    "Programming Languages",
+    "Other"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "viewsContainers": {
@@ -65,6 +77,16 @@
       {
         "command": "bailuAgent.stop",
         "title": "Bailu: Stop"
+      },
+      {
+        "command": "bailuAgent.exportTranscript",
+        "title": "Bailu: Export Transcript",
+        "icon": "$(output)"
+      },
+      {
+        "command": "bailuAgent.saveSnapshot",
+        "title": "Bailu: Save Snapshot",
+        "icon": "$(save)"
       }
     ],
     "configuration": {
@@ -81,7 +103,15 @@
         },
         "bailu.thinking": {
           "type": "string",
-          "enum": ["auto", "instant", "low", "medium", "high", "max", "off"],
+          "enum": [
+            "auto",
+            "instant",
+            "low",
+            "medium",
+            "high",
+            "max",
+            "off"
+          ],
           "default": "high"
         },
         "bailu.mode": {
@@ -91,20 +121,31 @@
         },
         "bailu.locale": {
           "type": "string",
-          "enum": ["en", "id"],
+          "enum": [
+            "en",
+            "id"
+          ],
           "default": "en",
           "description": "UI language. Default English; Indonesian supported."
         },
         "bailu.theme": {
           "type": "string",
-          "enum": ["auto", "dark", "light"],
+          "enum": [
+            "auto",
+            "dark",
+            "light"
+          ],
           "default": "auto",
           "description": "Sidebar theme. Auto follows VS Code / VSCodium."
         },
         "bailu.bookmarks": {
           "type": "array",
-          "items": { "type": "string" },
-          "default": ["bailu-auto"],
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "bailu-auto"
+          ],
           "description": "Bookmarked model ids."
         },
         "bailu.maxTokens": {

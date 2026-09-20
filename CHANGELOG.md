@@ -16,6 +16,9 @@
 - **API Key & TinyFish Masking Fix**: Status input bersih/kosong saat belum pernah diisi, masking bintang hanya jika tersimpan, auto-select saat fokus, dan proteksi anti-overwrite kredensial.
 - **Simulated Installation & Packaging Verification**: Menambahkan test suite `test/test-install.js` untuk mengekstrak file `.vsix`, memverifikasi kelengkapan bundle tanpa kebocoran file sumber, menguji aktivasi Extension Host, dan memastikan ketersediaan seluruh 5 perintah extension.
 - **Context Enrichment & Capacity**: Pelampiran listing file dan workspace context otomatis (maksimal 16 KB), batas output adaptif hingga 131K token, timeout 10 menit, dan penulisan multi-file otomatis hingga 20 file.
+- **Automated File Writing Mode Guard**: Menambahkan proteksi mode agar pembuatan file otomatis (`applyGeneratedFiles`) dinonaktifkan saat berada pada mode `Ask` dan `Plan`, serta menyaring tag pustaka umum (seperti `vue.js`, `chart.js`) agar tidak tertulis sebagai file lokal.
+- **Webview Rendering & A11y Polish**: Memperbaiki link Markdown agar tidak ter-escape ganda, mempertahankan sel tabel kosong pada `flushTable`, menambahkan label aksesibilitas (`aria-label`) pada tombol salin pesan, serta menerapkan deteksi scroll cerdas saat streaming teks.
+- **Modernized Documentation & Badges**: Merombak tampilan README.md dengan badge berskala penuh (`for-the-badge`), navigasi cepat, 4 pilar arsitektur, matriks Quality Assurance, dan opsi dukungan QRIS/PayPal terintegrasi.
 
 ## 1.1.7
 
