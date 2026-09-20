@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+out/
+*.vsix
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Kilo & IDE temporary state
+.kilo/
+.vscode-test/
+*.log

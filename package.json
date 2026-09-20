@@ -1,0 +1,136 @@
+{
+  "name": "bailu-kilo-agent",
+  "displayName": "Bailu Agent",
+  "description": "Agentic coding sidebar for BAILU AI — Kilo-style panel, model picker, Auto, thinking, API token.",
+  "version": "1.1.8",
+  "files": ["out/**", "media/**", "AUTHOR.md", "README.md", "CHANGELOG.md", "DOCNOTE.md", "LICENSE"],
+  "publisher": "alsyundawy",
+  "author": {
+    "name": "Harry DS Alsyundawy",
+    "email": "alsyundawy@gmail.com",
+    "url": "https://alsyundawy.com"
+  },
+  "homepage": "https://alsyundawy.com",
+  "bugs": {
+    "url": "https://github.com/alsyundawy",
+    "email": "alsyundawy@gmail.com"
+  },
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alsyundawy/bailu-kilo-agent.git"
+  },
+  "activationEvents": [],
+  "extensionKind": [
+    "workspace",
+    "ui"
+  ],
+  "categories": ["Machine Learning", "Programming Languages", "Other"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "bailuAgent",
+          "title": "Bailu Agent",
+          "icon": "media/activity.svg"
+        }
+      ]
+    },
+    "views": {
+      "bailuAgent": [
+        {
+          "type": "webview",
+          "id": "bailuAgent.sidebar",
+          "name": "Bailu Agent",
+          "icon": "media/activity.svg"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "bailuAgent.newTask",
+        "title": "Bailu: New Task",
+        "icon": "$(add)"
+      },
+      {
+        "command": "bailuAgent.openSettings",
+        "title": "Bailu: Settings",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "bailuAgent.stop",
+        "title": "Bailu: Stop"
+      }
+    ],
+    "configuration": {
+      "title": "Bailu Agent",
+      "properties": {
+        "bailu.baseUrl": {
+          "type": "string",
+          "default": "https://bailucode.com/openapi/v1",
+          "description": "OpenAI-compatible Base URL"
+        },
+        "bailu.model": {
+          "type": "string",
+          "default": "bailu-auto"
+        },
+        "bailu.thinking": {
+          "type": "string",
+          "enum": ["auto", "instant", "low", "medium", "high", "max", "off"],
+          "default": "high"
+        },
+        "bailu.mode": {
+          "type": "string",
+          "default": "code",
+          "description": "Built-in agent (code/plan/ask/debug/review) or custom agent id."
+        },
+        "bailu.locale": {
+          "type": "string",
+          "enum": ["en", "id"],
+          "default": "en",
+          "description": "UI language. Default English; Indonesian supported."
+        },
+        "bailu.theme": {
+          "type": "string",
+          "enum": ["auto", "dark", "light"],
+          "default": "auto",
+          "description": "Sidebar theme. Auto follows VS Code / VSCodium."
+        },
+        "bailu.bookmarks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["bailu-auto"],
+          "description": "Bookmarked model ids."
+        },
+        "bailu.maxTokens": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 131072,
+          "description": "Max output tokens per reply. 0 = use the selected model cap (up to 131072)."
+        },
+        "bailu.tinyfishApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "TinyFish API Key for web scraping, crawler, and search engine. Leave empty to use default shared key."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "test": "node test/verify.js && node test/test-install.js",
+    "vscode:prepublish": "npm run compile",
+    "package": "npx --yes @vscode/vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.6.0"
+  }
+}
