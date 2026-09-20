@@ -1,5 +1,5 @@
 const UA =
-  "Mozilla/5.0 (compatible; BailuAgent/1.1.8; +https://bailucode.com) AppleWebKit/537.36";
+  "Mozilla/5.0 (compatible; BailuAgent/1.1.9; +https://bailucode.com) AppleWebKit/537.36";
 const TINYFISH_API_KEY = process.env.TINYFISH_API_KEY || "";
 
 export async function webSearch(query: string): Promise<string> {
@@ -156,13 +156,15 @@ function parseDdg(
   const out: { title: string; url: string; snip: string }[] = [];
   const re =
     /<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html))) {
+  let m = re.exec(html);
+  while (m !== null) {
     const url = decodeDdg(decodeEntities(m[1]));
     const title = stripHtml(m[2]).trim();
-    if (!url || !title) continue;
-    out.push({ title, url, snip: "" });
-    if (out.length >= 8) break;
+    if (url && title) {
+      out.push({ title, url, snip: "" });
+      if (out.length >= 8) break;
+    }
+    m = re.exec(html);
   }
   const snips = [
     ...html.matchAll(

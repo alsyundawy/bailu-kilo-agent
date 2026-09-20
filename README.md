@@ -2,20 +2,20 @@
 
 ![Bailu Agent Logo](media/icon.png)
 
-[![Release](https://img.shields.io/badge/Release-v1.1.8-007ACC?style=for-the-badge&logo=visualstudiocode)](https://github.com/alsyundawy/bailu-kilo-agent/releases)
+[![Release](https://img.shields.io/badge/Release-v1.1.9-007ACC?style=for-the-badge&logo=visualstudiocode)](https://github.com/alsyundawy/bailu-kilo-agent/releases)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.90.0-007ACC?style=for-the-badge&logo=visualstudiocode)](https://code.visualstudio.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 [![Trunk Check](https://img.shields.io/badge/Trunk%20Check-9%20Linters%20Clean-brightgreen?style=for-the-badge&logo=checkmarx)](https://trunk.io)
 [![Dependencies](https://img.shields.io/badge/Dependencies-0%20Runtime%20Deps-success?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Models](https://img.shields.io/badge/Models-38%20Live%20Engines-blueviolet?style=for-the-badge&logo=openai)](https://bailucode.com)
-[![Package Size](https://img.shields.io/badge/VSIX%20Package-81.3%20KB-orange?style=for-the-badge&logo=webpack)](https://github.com/alsyundawy/bailu-kilo-agent/releases)
+[![Models](https://img.shields.io/badge/Models-39%20Live%20Engines-blueviolet?style=for-the-badge&logo=openai)](https://bailucode.com)
+[![Package Size](https://img.shields.io/badge/VSIX%20Package-90.4%20KB-orange?style=for-the-badge&logo=webpack)](https://github.com/alsyundawy/bailu-kilo-agent/releases)
 [![Donate PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.me/alsyundawy)
 
-> **Next-generation agentic pair-programmer and intelligent coding sidebar for BAILU AI cloud services with Kilo-style interface, 38 live models, and native Antigravity engineering methodology.**
+> **Next-generation agentic pair-programmer and intelligent coding sidebar for BAILU AI cloud services with Kilo-style interface, 39 live models, and native Antigravity engineering methodology.**
 >
 > Designed, engineered, and maintained by **[`HARRY DERTIN SUTISNA ALSYUNDAWY (@alsyundawy)`](https://github.com/alsyundawy)** — Built for modern AI-assisted software engineering.
 >
-> 📦 **[`GitHub Releases`](https://github.com/alsyundawy/bailu-kilo-agent/releases)** &nbsp;|&nbsp; 🌐 **[`Bailu AI Cloud`](https://bailucode.com)** &nbsp;|&nbsp; 📜 **[`Full Changelog (CHANGELOG.md)`](CHANGELOG.md)** &nbsp;|&nbsp; 💖 **[`Support via PayPal`](https://www.paypal.me/alsyundawy)** &nbsp;|&nbsp; 🇮🇩 **[`Donasi QRIS`](#-indonesian--regional-support-qris-quick-response-code-indonesian-standard)**
+> 📦 **[`GitHub Releases`](https://github.com/alsyundawy/bailu-kilo-agent/releases)** &nbsp;|&nbsp; 🌐 **[`Bailu AI Cloud`](https://bailucode.com)** &nbsp;|&nbsp; 📜 **[`Full Changelog (CHANGELOG.md)`](CHANGELOG.md)** &nbsp;|&nbsp; 💖 **[`Support via PayPal`](https://www.paypal.me/alsyundawy)** &nbsp;|&nbsp; 🇮🇩 **[`QRIS Donation`](#-indonesian--regional-support-qris-quick-response-code-indonesian-standard)**
 
 ---
 
@@ -25,7 +25,7 @@
 - [Why This Modernized Edition?](#-why-this-modernized-edition)
 - [Key Features](#-key-features)
 - [Architecture & Design](#️-architecture--design)
-- [Model Catalog (38 Models)](#-model-catalog-38-models)
+- [Model Catalog (39 Models)](#-model-catalog-39-models)
 - [Specialized Agent Modes](#-specialized-agent-modes)
 - [Reasoning & Thinking Levels](#-reasoning--thinking-levels)
 - [Deep Web Tools (TinyFish & Fallback)](#-deep-web-tools-tinyfish--fallback)
@@ -36,7 +36,7 @@
 - [Engineering Standards & Invariants](#-engineering-standards--invariants)
 - [Security & Content Safety](#-security--content-safety)
 - [Development & Build Workflow](#️-development--build-workflow)
-- [Ringkasan Panduan (Bahasa Indonesia)](#-ringkasan-panduan-bahasa-indonesia)
+- [Quick Start Guide](#-quick-start-guide)
 - [Maintainer & Contact](#-maintainer--contact)
 - [Support & Donation](#-support--donation)
 - [License](#-license)
@@ -53,7 +53,7 @@ Inspired by the ergonomic, high-density Kilo sidebar panel, Bailu Agent equips s
 
 ## 🚀 Why This Modernized Edition?
 
-This edition (**v1.1.8+**) represents a complete architectural, security, accessibility, and visual overhaul of the extension:
+This edition (**v1.1.9**) represents a complete architectural, security, accessibility, and visual overhaul of the extension:
 
 ### 🛡️ 1. Zero-Bloat Native TypeScript & CSP Isolation
 
@@ -68,10 +68,10 @@ This edition (**v1.1.8+**) represents a complete architectural, security, access
 - **Dynamic Context Injection**: Supports `@skill:<name>` syntax (e.g., `@skill:superpowers:test-driven-development`) to automatically discover and inject runbook procedures directly into the agent context.
 - **Multi-File Workspace Context**: Automatically scans workspace file trees and contextual file snippets (capped at 16 KB) for zero-hallucination accuracy.
 
-### ⚡ 3. 38 Synchronized Models & Fine-Grained Reasoning (CoT)
+### ⚡ 3. 39 Synchronized Models & Fine-Grained Reasoning (CoT)
 
-- **Live Cloud Synchronization**: Synchronized with the latest Bailu AI model directory, supporting context windows up to **1,048,576 tokens** (1M) and single-response completions up to **131,072 tokens**.
-- **Flagship Claude Opus 5 Tier**: Featuring `bailu-2.8`, `bailu-2.8-nvfp8`, and `bailu-2.8-lite` with fine-grained Chain-of-Thought controls across 7 levels (`instant`, `low`, `medium`, `high`, `max`, `auto`, `off`).
+- **Live Cloud Synchronization**: Synchronized with the latest Bailu AI model directory, supporting context windows up to **1,048,576 tokens** (1M) and single-response completions up to **262,144 tokens**.
+- **Flagship Claude Opus 5 Tier**: Featuring `bailu-turing`, `bailu-2.8`, `bailu-2.8-nvfp8`, and `bailu-2.8-lite` with fine-grained Chain-of-Thought controls across 7 levels (`instant`, `low`, `medium`, `high`, `max`, `auto`, `off`).
 - **Dense Coding Specialists**: The Apex series (`bailu-apex-2.7`, `bailu-apex-openclaw`, `bailu-apex-2`) fine-tuned for tool execution and autonomous agent workflows.
 
 ### 🌐 4. High-Fidelity Web Intelligence (TinyFish & Fallback)
@@ -84,7 +84,7 @@ This edition (**v1.1.8+**) represents a complete architectural, security, access
 
 ## ✨ Key Features
 
-- **⚡ 38 Live Models**: Full alignment with the Bailu AI cloud dashboard, supporting context windows up to **1,000,000 tokens** (1M) and single-reply output limits up to **131,072 tokens**.
+- **⚡ 39 Live Models**: Full alignment with the Bailu AI cloud dashboard, supporting context windows up to **1,048,576 tokens** (1M) and single-reply output limits up to **262,144 tokens**.
 - **🧠 7 Reasoning / Thinking Levels**: Fine-grained Chain-of-Thought (CoT) tuning (`instant`, `low`, `medium`, `high`, `max`, `auto`, and `off`).
 - **🤖 6 Autonomous Modes**: Dedicated agent personalities (`Code`, `Plan`, `Ask`, `Debug`, `Review`, `Arch`) with bilingual system prompt support.
 - **🌐 Real-Time Web Search & Deep Scrape**: High-fidelity search and full-DOM scraping powered by TinyFish AI API with seamless DuckDuckGo HTML fallback.
@@ -142,20 +142,21 @@ flowchart TB
 
 ---
 
-## 📊 Model Catalog (38 Models)
+## 📊 Model Catalog (39 Models)
 
-Bailu Agent ships with a synchronized, production-tested catalog of 38 models categorized into specialized tiers:
+Bailu Agent ships with a synchronized, production-tested catalog of 39 models categorized into specialized tiers:
 
-### 1. Bailu 2.8 Flagship Generation (Claude Opus 5 Benchmark Tier)
+### 1. Enterprise Deep Reasoning Flagship & Bailu 2.8 Generation
 
-| Model ID            | Context Limit      | Max Output  | Thinking Levels | Capabilities & Tags                          |
-| :------------------ | :----------------- | :---------- | :-------------- | :------------------------------------------- |
-| `bailu-2.8`         | **1,048,576 (1M)** | **131,072** | Instant – Max   | Flagship, Multimodal Vision, Code Generation |
-| `bailu-2.8-nvfp8`   | **1,048,576 (1M)** | 128,000     | Low – High      | NVFP8 Quantized, High-Speed Inference        |
-| `bailu-2.8-lite`    | 262,144 (262K)     | 65,536      | Low – Max       | MoE Architecture, Efficient Reasoning        |
-| `bailu-2.8-free`    | 262,144 (262K)     | **218,000** | Instant – Max   | Free Tier Community Access, Deep Output      |
-| `bailu-2.8-preview` | 1,048,572 (1M)     | 131,072     | —               | Frontier Preview Builds                      |
-| `bailu-2.8-vl-2B`   | 256,000 (256K)     | 65,536      | —               | Lightweight Vision & Agent Automation        |
+| Model ID            | Context Limit      | Max Output  | Thinking Levels | Capabilities & Tags                                   |
+| :------------------ | :----------------- | :---------- | :-------------- | :---------------------------------------------------- |
+| `bailu-turing`      | **1,048,576 (1M)** | **131,072** | Low – Max       | Enterprise Deep Reasoning Flagship, Multimodal Vision |
+| `bailu-2.8`         | **1,048,576 (1M)** | **131,072** | Instant – Max   | Flagship, Multimodal Vision, Code Generation          |
+| `bailu-2.8-nvfp8`   | **1,048,576 (1M)** | 128,000     | Low – High      | NVFP8 Quantized, High-Speed Inference                 |
+| `bailu-2.8-lite`    | 262,144 (262K)     | 65,536      | Low – Max       | MoE Architecture, Efficient Reasoning                 |
+| `bailu-2.8-free`    | 262,144 (262K)     | **218,000** | Instant – Max   | Free Tier Community Access, Deep Output               |
+| `bailu-2.8-preview` | 1,048,572 (1M)     | 131,072     | —               | Frontier Preview Builds                               |
+| `bailu-2.8-vl-2B`   | 256,000 (256K)     | 65,536      | —               | Lightweight Vision & Agent Automation                 |
 
 ### 2. Bailu 2.7 High-Performance Series
 
@@ -173,7 +174,7 @@ Bailu Agent ships with a synchronized, production-tested catalog of 38 models ca
 
 | Model ID              | Context Limit      | Max Output  | Specialization                               |
 | :-------------------- | :----------------- | :---------- | :------------------------------------------- |
-| `bailu-apex-2.7`      | **512,000 (512K)** | **512,000** | Multimodal Heavyweight, Instant–Max Thinking |
+| `bailu-apex-2.7`      | **512,000 (512K)** | **262,144** | Multimodal Heavyweight, Instant–Max Thinking |
 | `bailu-apex-openclaw` | 256,000 (256K)     | 128,000     | Fine-tuned for Tool-Use & Agent Workflows    |
 | `bailu-apex-2`        | **1,048,000 (1M)** | 256,000     | Dense Codebase Comprehension                 |
 | `bailu-apex-2.6`      | 512,000 (512K)     | 256,000     | Free Multimodal Analysis                     |
@@ -250,14 +251,17 @@ Bailu Agent features native web retrieval capabilities accessible via the **🌐
 
 ### Option 1: Install from VSIX Package (Recommended)
 
-1. Download the latest `bailu-kilo-agent-1.1.8.vsix` release from [GitHub Releases](https://github.com/alsyundawy/bailu-kilo-agent/releases).
+1. Download the latest `bailu-kilo-agent-1.1.9.vsix` release from [GitHub Releases](https://github.com/alsyundawy/bailu-kilo-agent/releases).
 2. In VS Code / VSCodium / Antigravity, open the Command Palette (`Cmd+Shift+P` or `Ctrl+Shift+P`).
 3. Select **Extensions: Install from VSIX...** and choose the downloaded file.
 4. Or install directly via terminal:
 
    ```bash
-   code --install-extension bailu-kilo-agent-1.1.8.vsix
+   code --install-extension bailu-kilo-agent-1.1.9.vsix
    ```
+
+> [!IMPORTANT]
+> **Mandatory Restart**: Every fresh install, update, upgrade, download, or re-installation requires an Extension Host restart (`workbench.action.restartExtensionHost`) or Window reload (`workbench.action.reloadWindow`). Bailu Agent automatically presents an interactive prompt upon activation to execute this action.
 
 ### Option 2: Build from Source
 
@@ -335,7 +339,7 @@ Every release of Bailu Agent undergoes comprehensive automated quality gates to 
 | **Strict Type Checking**   | [`TypeScript Compiler`](https://tsc.io)     | `tsc -p ./` with strict typing and ES2022 target                  | **PASSED (0 errors)**           |
 | **Manifest & Asset Verif** | `node test/verify.js`                       | Package manifest, SVG codicons, and bundle integrity              | **PASSED (100% verified)**      |
 | **Extension Host Sandbox** | `node test/test-install.js`                 | VSIX simulation, lifecycle activation, 5 commands, zero ts-leak   | **PASSED (100% clean sandbox)** |
-| **Production Packaging**   | [`vsce package`](https://github.com/vscode) | Optimized `.vsix` bundle packaging with zero runtime dependencies | **PASSED (81.27 KB bundle)**    |
+| **Production Packaging**   | [`vsce package`](https://github.com/vscode) | Optimized `.vsix` bundle packaging with zero runtime dependencies | **PASSED (90.38 KB bundle)**    |
 
 ---
 
@@ -388,24 +392,24 @@ npm run package
 
 ---
 
-## 🇮🇩 Ringkasan Panduan (Bahasa Indonesia)
+## 🚀 Quick Start Guide
 
-**Bailu Agent** adalah ekstensi sidebar coding AI untuk VS Code, VSCodium, dan Antigravity yang terhubung langsung ke platform **BAILU AI** ([`https://bailucode.com`](https://bailucode.com)).
+**Bailu Agent** is an agentic AI coding sidebar extension for VS Code, VSCodium, Cursor, Windsurf, Trae, and Antigravity connected directly to the **BAILU AI** cloud platform ([`https://bailucode.com`](https://bailucode.com)).
 
-### Fitur Utama
+### Core Capabilities
 
-- **Katalog 38 Model**: Akses instan ke model flagship `bailu-2.8` (1M konteks, 131K output), `bailu-2.8-free`, seri Apex untuk pemrograman intensif, serta model edge cepat.
-- **6 Mode Agen Cerdas**: Beralih antara mode `Code`, `Plan`, `Ask`, `Debug`, `Review`, dan `Arch` sesuai tahapan kerja Anda.
-- **Penalaran Mendalam (Thinking Level)**: Kendalikan intensitas Chain-of-Thought dari `instant` hingga `max`.
-- **Pencarian Web TinyFish**: Telusuri dokumentasi terbaru dan scraping konten web langsung ke dalam prompt AI.
-- **Keamanan Tingkat Tinggi**: API Token tersimpan aman di `SecretStorage` sistem operasi dan bebas dari dependensi pihak ketiga yang rentan.
+- **39-Model Synchronized Catalog**: Instant access to enterprise flagship `bailu-turing` (1M context, 131K output, deep reasoning), `bailu-2.8` (Opus 5 tier), `bailu-2.8-free`, Apex series for intensive programming, and lightweight edge models.
+- **6 Intelligent Agent Modes**: Switch between `Code`, `Plan`, `Ask`, `Debug`, `Review`, and `Arch` depending on your current workflow stage.
+- **Deep Reasoning (Thinking Levels)**: Control Chain-of-Thought reasoning intensity from `instant` to `max`.
+- **TinyFish Web Intelligence**: Fetch up-to-date documentation and scrape web content directly into your AI prompt.
+- **Enterprise Security**: API tokens are securely isolated in the OS `SecretStorage` with zero vulnerable third-party dependencies.
 
-### Cara Cepat Memulai
+### Quick Setup
 
-1. Pasang file `.vsix` melalui menu `Extensions: Install from VSIX...` di VS Code.
-2. Klik ikon Bailu Agent di Activity Bar sebelah kiri.
-3. Klik tombol **⚙ (Pengaturan)**, masukkan API Token Bailu Anda, lalu klik **Simpan & Tes Koneksi**.
-4. Pilih model (misalnya `bailu-auto` atau `bailu-2.8`) dan mulai berinteraksi!
+1. Install the `.vsix` package via `Extensions: Install from VSIX...` in VS Code or your IDE.
+2. Click the Bailu Agent icon in the Activity Bar on the left.
+3. Click the **Settings (gear icon)** button, enter your Bailu API token, and click **Save & test connection**.
+4. Select your preferred model (e.g., `bailu-auto`, `bailu-turing`, or `bailu-2.8`) and start coding!
 
 ---
 
@@ -438,7 +442,7 @@ Scan the QRIS barcode below using any Indonesian mobile banking app (BCA, Mandir
 
 ![QRIS Donation Barcode - ALSYUNDAWY](https://github.com/user-attachments/assets/a0126f28-6dde-43da-ba14-d7c9a27de0df)
 
-- **Merchant / Account Name**: **ALSYUNDAWY**
+- **Merchant / Account Name**: **ALSYUNDAWY IT SOLUTION**
 - **NMID**: **`ID1020021153676`**
 - **Direct Barcode Asset Link**: [`https://github.com/user-attachments/assets/a0126f28-6dde-43da-ba14-d7c9a27de0df`](https://github.com/user-attachments/assets/a0126f28-6dde-43da-ba14-d7c9a27de0df)
 - **WhatsApp Confirmation**: [`+62 856-8515-212`](https://wa.me/628568515212)

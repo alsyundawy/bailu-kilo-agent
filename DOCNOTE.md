@@ -2,69 +2,120 @@
 
 ## Architecture & Evolution
 
-### Versi 1.1.8 (Saat Ini)
+### Version 1.1.9 (Current)
 
-1. **Ekspansi Katalog Model Sesuai Dashboard Bailu (38 Model Aktif)**:
-   - Menyelaraskan katalog model dengan dashboard akun live pengguna: dari 24 model menjadi 38 model terverifikasi lengkap dengan metadata kuota konteks (hingga 1M token), batas output (hingga 256K token), dan tag kapabilitas.
-   - Menambahkan flagship generasi baru `bailu-2.8` (benchmark setara Claude Opus 5, multimodal 1M konteks, 131K output), varian kuantisasi `bailu-2.8-nvfp8` (1M konteks, 128K output), MoE `bailu-2.8-lite`, kanal gratis `bailu-2.8-free` (262K konteks, 218K output), agent-trained `bailu-apex-openclaw` (dioptimalkan untuk tool-use & agent workflow), dan model multimodal/edge (`bailu-2.8-vl-2B`, `bailu-2.7-lite-vl`, `bailu-2.7-vl-350m`, `bailu-edge-8b`, `bailu-edge-0.5b`).
-2. **Perbaikan Pemetaan Properti Model Badge (`.context` & `.maxOut`)**:
-   - Memperbaiki ketidaksesuaian pembacaan properti model antara interface TypeScript dan runtime webview. Kini mendukung `m.context || m.context_length` dan `m.maxOut || m.max_output` sehingga seluruh 38 model menampilkan lencana kapasitas konteks (`1M ctx`, `262K ctx`) dan output (`131K out`, `218K out`) dengan akurat.
-3. **Fleksibilitas Reasoning / Thinking Level**:
-   - Menambahkan level penalaran `instant`, `max`, dan `off` melengkapi `auto`, `low`, `medium`, `high` pada skema `package.json`, model catalog, dan dropdown webview.
-   - Backend `executeChatCompletion()` diperbaiki agar tidak mendrop nilai `instant` dan `max` saat memetakan `reasoning_effort`.
-4. **Normalisasi Protokol Anthropic (`/v1/messages`)**:
-   - `normalizeBase()` kini otomatis membersihkan trailing `/messages` selain `/chat/completions` dan `/models`, menjamin kompatibilitas penuh dengan kuota terdedikasi 5M tokens/hari protokol Anthropic.
-5. **Security Hardening Path Traversal pada Snapshot**:
-   - Fungsi `loadSnapshot(id)` kini membungkus ID file dengan `path.basename()` untuk mencegah potensi eksploitasi relative path traversal di luar folder `~/.bailucode/snapshots/`.
-6. **Optimasi Modul Statis & Sinkronisasi User-Agent**:
-   - Mengganti pemanggilan dinamis `await import("node:fs")` dan `require("node:path")` dengan import statis ES di tingkat atas file.
-   - Menyelaraskan seluruh header `User-Agent` pencarian web dan crawler ke versi aktif `BailuAgent/1.1.8`.
-7. **Desain GUI Webview Modern, Responsif & User-Friendly**:
-   - **Bar Lencana Kapabilitas Model (`#modelBadgeBar`)**: Memunculkan badge dinamis real-time saat model dipilih (misal: `1M ctx`, `131K out`, `Flagship`, `Opus 5 Tier`, `Vision`, `Free`, `NVFP8`, `MoE`, `Edge`) agar developer mengetahui batas dan spesifikasi model secara visual.
-   - **Header Bahasa & Tombol Salin per Blok Kode**: Setiap blok kode dalam Markdown kini dibungkus rapi dalam kontainer `.code-box` dengan label bahasa pemrograman dan tombol salin terisolasi (`.code-copy`) dengan proteksi anti-spam klik dan delegasi event CSP nonce-compliant.
-   - **Toggle Cerdas Tombol Send / Stop**: Menghemat ruang horizontal pada sidebar sempit (250–300px). Tombol Stop disembunyikan saat idle, dan tombol Send otomatis berganti menjadi tombol Stop merah mencolok selama proses generasi/streaming.
-   - **Textarea Auto-Expanding**: Input textarea pesan otomatis menyesuaikan tinggi baris secara responsif hingga 200px ketika pengguna mengetik atau menempelkan potongan kode multiline.
-   - **Grid Mode Agen Adaptif**: Tab mode agen (`Code`, `Plan`, `Ask`, `Debug`, `Review`, `Arch`) ditata menggunakan CSS Grid responsif (`repeat(auto-fit, minmax(42px, 1fr))`) agar rapi di berbagai ukuran lebar sidebar editor.
-8. **Perbaikan & Masking Input API Key**:
-   - Status awal bersih/kosong (`""`) jika key belum pernah disimpan (tanpa masking bintang prematur).
-   - Tampilan bintang (`••••••••••••••••`) hanya aktif jika key sudah tersimpan di `SecretStorage` atau konfigurasi.
-   - Handler `focus` otomatis menjalankan `select()`, dan handler simpan memproteksi string bintang agar tidak menimpa kredensial asli.
-9. **Simulasi Instalasi & Verifikasi Paket VSIX**:
-   - Ditambahkan automated test runner `test/test-install.js` yang memverifikasi integritas archive `.vsix`, memastikan nol kebocoran file source `.ts`/`test/`, mengekstrak ke virtual VS Code extension dir, dan menguji aktivasi Extension Host, pendaftaran 5 command, dan lifecycle disposable.
-   - Memastikan kontribusi view dan perintah lengkap tanpa deklarasi redundan pada manifest.
+1. **Enterprise Flagship Model Synchronization `bailu-turing` (39 Active Models)**:
+   - Identified from the user's live Bailu account dashboard: addition of `bailu-turing` (BaiLu Turing, Enterprise Deep Reasoning Flagship: 1,048,576 context, 131,072 max output, multimodal + deep reasoning).
+   - Brings the verified model catalog in the extension to 39 models with full reasoning and vision capabilities.
+2. **Comprehensive GUI Modernization & Webview UI Overhaul**:
+   - **Transition to Codicon Vector Icons**: All action buttons (`#btnExport`, `#btnSnap`, `#btnNew`, `#btnSet`, `#btnBack`, and copy buttons) transitioned from OS unicode emojis to consistent, crisp, and theme-adaptive inline SVGs supporting VS Code Dark, Light, and High-Contrast themes.
+   - **Welcome Card & Quick Action Starters (`#welcomeCard`)**: Provides an informative starting interface when the chat view is empty, offering one-click prompt templates (`💡 Explain active file`, `✨ Refactor & clean`, `🧪 Generate unit tests`, `🔍 Debug & find bugs`) that automatically dismiss once a conversation starts.
+   - **Distinct Visual Message Bubble Separation (User vs Assistant)**: High-contrast styling between user messages (`.msg.user` with semi-transparent theme accent and `👤 You` badge) and assistant messages (`.msg.assistant` with `🤖 Bailu` badge and SVG copy button), dramatically improving readability on narrow sidebars (250–300px).
+   - **Streaming Typing Indicator**: Added an active cursor `▍` with `@keyframes blinkCursor` animation during SSE token reception (`data-stream="1"`), giving clear visual feedback that the model is actively composing an answer.
+   - **Pulsing Status Indicator (`#statusDot`)**: Interactive status indicator (gentle green `.dot-ready` vs dynamic pulsing `.dot-busy`) providing real-time visibility into connection and agent readiness.
+   - **Structured Settings Groups (`.setting-group`)**: Reorganized settings forms into clean, categorized cards: Authentication & Keys, Model & Reasoning Defaults, Preferences, and Telemetry & Usage.
+   - **Thinking Intensity Polish**: Implemented adaptive `.no-think` selector to dim reasoning intensity controls whenever the selected model lacks reasoning parameter support.
+3. **SSE Buffer Bug Fix & Streaming Fallback**:
+   - Resolved the issue of missing final chunks in SSE streaming when the server terminates connection without a trailing newline via parameterless `dec.decode()`.
+   - Prevented dropped `reasoning_effort` parameters when streaming requests fall back automatically to non-streaming mode.
+4. **Output Limit Increase (`MAX_OUT_CAP` = 262144)**:
+   - Aligned maximum token output capacity up to 256K tokens to accommodate new-generation models without artificial truncation at the former 128K ceiling.
+5. **Code Hygiene & Biome Linter**:
+   - Fixed regex loop assignment in `src/webtools.ts` (`while (m !== null)`), ensuring 100% compliance with static analysis and linters.
+6. **Internal Audit Depth — UA Sync & Catalog Alignment**:
+   - `src/webtools.ts`: User-Agent string `BailuAgent/1.1.8` updated to `BailuAgent/1.1.9` (synchronizing HTTP headers across all web search and crawling features).
+   - `src/models.ts` (`bailu-apex-2.7`, `bailu-apex`): `maxOut` corrected from `512000` to `262144` (= `MAX_OUT_CAP`) — output badge no longer displays an unreachable runtime value.
+   - `test/audit.js`: Updated version comment header to `v1.1.9`.
+7. **Accessibility Guard `setBusy()` — Textarea `aria-disabled` + statusDot Tooltip**:
+   - While the model is streaming, `#input` textarea receives `aria-disabled="true"` and `readonly` to semantically communicate disabled status to screen readers and assistive tech.
+   - Attributes are cleanly removed once streaming finishes (`setBusy(false)`).
+   - `#statusDot` features a dynamic `title` tooltip: `"Model is generating…"` when busy, and `"Ready — type to chat"` when idle.
+8. **100% English System Messages & Complete Localization**:
+   - Replaced all lingering non-English backend strings in `src/extension.ts` (`"Token kosong"` → `"API token is missing"`, `"Memanggil "` → `"Calling "`, `"model dari API"` → `"models from API"`).
+   - All extension runtime logs, error reports, and status notices default strictly to clean, professional English.
+9. **Sandboxed & Read-Only Environment Hardening**:
+   - Wrapped `writeJson()` in `src/home.ts` within a defensive `try/catch` block, preventing unhandled runtime exceptions in restricted Docker containers, Nix environments, or read-only workspaces.
+10. **Model Specification & Thinking Accuracy**:
 
-### Versi 1.1.7
+- Synchronized documentation for `bailu-turing` thinking levels to `Low – Max` matching `src/models.ts`.
+
+11. **Mandatory Restart Protocol on Install, Update, Upgrade & Reinstall**:
+
+- Integrated `checkInstallOrUpdateRestart()` in `src/extension.ts`.
+- Compares active package version, installation directory, and filesystem modification timestamps against `globalState` cache.
+- On any fresh download, update, upgrade, or reinstallation, immediately prompts the user with action buttons to restart the Extension Host (`workbench.action.restartExtensionHost`) or reload the window (`workbench.action.reloadWindow`).
+- Ensures clean environment initialization without stale in-memory state or orphaned SecretStorage handlers.
+
+12. **Production VSIX Package Specification (v1.1.9)**:
+    - **Archive**: `bailu-kilo-agent-1.1.9.vsix`
+    - **Target Platform**: Universal (VS Code, Code-OSS, VSCodium, Cursor, Windsurf, Trae, Antigravity-IDE)
+    - **File Count**: `25 files`
+    - **Distribution**: Standalone `.vsix` attached to GitHub Release v1.1.9 with verified SHA-256 checksum
+    - **Exclusion Compliance**: Strict 0-source-leak policy verified by `test/test-install.js` (no TypeScript source, no test suites, no git metadata packed).
+
+### Version 1.1.8
+
+1. **Model Catalog Expansion per Bailu Dashboard (38 Active Models)**:
+   - Aligned the model catalog with the user's live account dashboard: from 24 models to 38 verified models complete with context quotas (up to 1M tokens), output limits (up to 256K tokens), and capability tags.
+   - Added new generation flagship `bailu-2.8` (Claude Opus 5 benchmark tier, multimodal 1M context, 131K output), quantized variant `bailu-2.8-nvfp8` (1M context, 128K output), MoE `bailu-2.8-lite`, free community channel `bailu-2.8-free` (262K context, 218K output), agent-trained `bailu-apex-openclaw` (optimized for tool-use and agent workflows), and multimodal/edge models (`bailu-2.8-vl-2B`, `bailu-2.7-lite-vl`, `bailu-2.7-vl-350m`, `bailu-edge-8b`, `bailu-edge-0.5b`).
+2. **Model Badge Property Mapping Fix (`.context` & `.maxOut`)**:
+   - Resolved discrepancies in property reading between TypeScript interfaces and runtime webview. Now supports `m.context || m.context_length` and `m.maxOut || m.max_output`, allowing all models to accurately display capacity badges (`1M ctx`, `262K ctx`, `131K out`, `218K out`).
+3. **Flexible Reasoning / Thinking Levels**:
+   - Added `instant`, `max`, and `off` reasoning levels alongside `auto`, `low`, `medium`, `high` across `package.json` schema, model catalog, and webview dropdown.
+   - Patched backend `executeChatCompletion()` so `instant` and `max` values are not dropped when mapping `reasoning_effort`.
+4. **Anthropic Protocol Normalization (`/v1/messages`)**:
+   - `normalizeBase()` automatically strips trailing `/messages` in addition to `/chat/completions` and `/models`, ensuring compatibility with the dedicated 5M tokens/day Anthropic protocol quota.
+5. **Snapshot Path Traversal Security Hardening**:
+   - `loadSnapshot(id)` wraps file IDs in `path.basename()` to eliminate relative path traversal exploits outside `~/.bailucode/snapshots/`.
+6. **Static Module Optimization & User-Agent Synchronization**:
+   - Replaced dynamic imports (`await import("node:fs")` and `require("node:path")`) with top-level static ES imports.
+   - Aligned all web search and crawler `User-Agent` headers to the active release `BailuAgent/1.1.8`.
+7. **Modern, Responsive & User-Friendly Webview GUI**:
+   - **Model Capability Badge Bar (`#modelBadgeBar`)**: Displays dynamic real-time badges upon model selection (`1M ctx`, `131K out`, `Flagship`, `Opus 5 Tier`, `Vision`, `Free`, `NVFP8`, `MoE`, `Edge`), allowing developers to visually verify limits and specifications.
+   - **Language Header & Copy Button per Code Block**: Every code block in Markdown is wrapped in a `.code-box` container with programming language tags and an isolated `.code-copy` button featuring click-spam protection and CSP nonce-compliant event delegation.
+   - **Smart Send / Stop Button Toggle**: Saves horizontal space in narrow sidebars (250–300px). Hides the Stop button during idle and toggles Send into a conspicuous Stop button during streaming generation.
+   - **Auto-Expanding Textarea**: Message input dynamically expands up to 200px when typing long prompts or pasting multiline code snippets.
+   - **Adaptive Agent Mode Grid**: Agent mode tabs (`Code`, `Plan`, `Ask`, `Debug`, `Review`, `Arch`) laid out with responsive CSS Grid (`repeat(auto-fit, minmax(42px, 1fr))`) for clean rendering across all editor sidebar widths.
+8. **API Key Input Masking & Protection**:
+   - Clean empty initial state (`""`) when no key has been stored (no premature bullet masking).
+   - Bullet masking (`••••••••••••••••`) only activates when a key is already persisted in `SecretStorage` or configuration.
+   - Focus handler runs `select()`, and save handler guards bullet strings from accidentally overwriting actual credentials.
+9. **Simulated Installation & VSIX Package Verification**:
+   - Added automated test runner `test/test-install.js` verifying `.vsix` archive integrity, ensuring zero source code leaks (`.ts`/`test/`), extracting into a virtual VS Code extension dir, and testing Extension Host activation, 5 command registrations, and disposable lifecycles.
+   - Ensured comprehensive view and command contributions without redundant declarations in the manifest.
+
+### Version 1.1.7
 
 1. **Lightweight Markdown Renderer**:
-   - Renderer Markdown mandiri di dalam webview tanpa dependensi eksternal (mendukung inline styling, code fences, blockquotes, lists, tabel, dan tautan).
-2. **Interaktivitas Pesan**:
-   - Tombol Salin (`📋`) pada setiap pesan asisten.
-   - Tombol Ekspor Transkrip (`📄`) untuk menyimpan seluruh riwayat chat ke file Markdown baru.
-   - Tombol Simpan Snapshot (`📷`) untuk mengarsipkan snapshot sesi.
-3. **Mode Arsitektur & Injeksi Skill**:
-   - Penambahan tab mode `arch` (Arsitektur) pada kontrol mode agen (`code`, `plan`, `ask`, `debug`, `review`, `arch`).
-   - Petunjuk placeholder `@skill:<nama>` di textarea input tugas.
+   - Standalone in-webview Markdown renderer with zero external dependencies (supports inline styling, code fences, blockquotes, lists, tables, and links).
+2. **Message Interactivity**:
+   - Copy button (`📋`) on each assistant response.
+   - Export Transcript button (`📄`) to save entire session history to a new Markdown file.
+   - Save Snapshot button (`📷`) to archive session state.
+3. **Architecture Mode & Skill Injection**:
+   - Added `arch` (Architecture) mode tab to agent controls (`code`, `plan`, `ask`, `debug`, `review`, `arch`).
+   - Placeholder hint `@skill:<name>` in task input textarea.
 
-### Versi 1.1.6
+### Version 1.1.6
 
 1. **TinyFish AI Web Search & Crawler**:
-   - `api.search.tinyfish.ai`: Hasil pencarian web terstruktur yang dioptimalkan untuk AI.
-   - `api.fetch.tinyfish.ai`: Ekstraksi rendering browser nyata menghasilkan Markdown bersih untuk reasoning LLM.
-   - Dual fallback strategy: Fallback otomatis ke DuckDuckGo search dan HTTP fetch jika TinyFish tidak dapat dijangkau.
-   - Deteksi input URL pintar: Memasukkan URL atau prefix `scrape:` otomatis mengarahkan ke crawler TinyFish.
+   - `api.search.tinyfish.ai`: Structured, AI-optimized web search results.
+   - `api.fetch.tinyfish.ai`: Real browser rendering extraction producing clean Markdown for LLM reasoning.
+   - Dual fallback strategy: Automatic fallback to DuckDuckGo search and HTTP fetch when TinyFish is unreachable.
+   - Smart URL input detection: Entering URLs or `scrape:` prefix routes directly to TinyFish crawler.
 2. **Cross-IDE & Remote Compatibility**:
-   - `contributes.views` dan `"extensionKind": ["workspace", "ui"]` menjamin aktivasi instan di semua fork Code-OSS, VSCodium, Cursor, Windsurf, Trae, Antigravity-IDE, dan Remote Containers.
+   - `contributes.views` and `"extensionKind": ["workspace", "ui"]` guarantee instant activation across all Code-OSS forks, VSCodium, Cursor, Windsurf, Trae, Antigravity-IDE, and Remote Containers.
 3. **Disposable Lifecycle**:
-   - `BailuViewProvider` mengimplementasikan `vscode.Disposable` yang terdaftar pada `context.subscriptions`. Mencegah tab ganda dan kebocoran listener.
+   - `BailuViewProvider` implements `vscode.Disposable` registered in `context.subscriptions`, preventing duplicate tabs and listener leaks.
 4. **Global Configuration (`~/.bailucode`)**:
-   - Konfigurasi, riwayat token/usage, custom agents, dan skills tersimpan persisten di direktori home user dan tersinkronisasi dua arah dengan setting VS Code.
+   - Configuration, token/usage history, custom agents, and skills persist in user home directory with bi-directional synchronization to VS Code settings.
 5. **Antigravity Superpowers & Agent Skills Ecosystem**:
-   - Injeksi metodologi TDD, 4-phase systematic debugging, dan dynamic discovery untuk 350+ skills & subagents.
+   - Injected TDD methodology, 4-phase systematic debugging, and dynamic discovery for 350+ skills & subagents.
 
 ---
 
 ## Security & Credential Safety
 
-- **Penyimpanan Kredensial**: API Token Bailu disimpan eksklusif pada VS Code `SecretStorage`, tidak pernah ditulis ke `settings.json` dalam bentuk teks biasa.
-- **Content Security Policy (CSP)**: Menggunakan cryptographic nonce acak (`crypto.randomUUID().replaceAll("-", "")`) pada setiap pemuatan webview untuk mencegah eksekusi skrip tidak sah.
-- **Path Traversal Guard**: Penulisan file memeriksa pola traversal path (`..`, slash/backslash di awal, atau titik dua) untuk mengamankan workspace.
+- **Credential Storage**: Bailu API tokens are stored exclusively in VS Code `SecretStorage`, never written to `settings.json` in plaintext.
+- **Content Security Policy (CSP)**: Employs a random cryptographic nonce (`crypto.randomUUID().replaceAll("-", "")`) on every webview reload to prevent unauthorized script execution.
+- **Path Traversal Guard**: Automated file writing validates against traversal patterns (`..`, leading slash/backslash, or colon) to keep workspace files secure.

@@ -152,12 +152,22 @@ export const CATALOG: CatalogModel[] = [
 
   // Apex Line (Dense, Agentic & Code Specialist)
   {
+    id: "bailu-turing",
+    label: "BaiLu Turing (1M Deep Reasoning)",
+    group: "apex",
+    thinking: ["low", "medium", "high", "max"],
+    context: 1048576,
+    maxOut: 131072,
+    agent: true,
+    tags: ["1M", "Deep-Reasoning", "Multimodal"],
+  },
+  {
     id: "bailu-apex-2.7",
     label: "Apex 2.7 (512K)",
     group: "apex",
     thinking: ["instant", "medium", "max"],
     context: 512000,
-    maxOut: 512000,
+    maxOut: 262144,
     agent: true,
     tags: ["512K", "Multimodal"],
   },
@@ -167,7 +177,7 @@ export const CATALOG: CatalogModel[] = [
     group: "apex",
     thinking: ["instant", "medium", "max"],
     context: 512000,
-    maxOut: 512000,
+    maxOut: 262144,
     agent: true,
     tags: ["512K", "Multimodal"],
   },

@@ -3,21 +3,15 @@
 // biome-ignore-all lint/correctness/noUnusedVariables: nonce param forwarded via HTML template
 // biome-ignore-all lint/style/useTemplate: intentional regex strings in browser JS
 /**
- * Bailu Agent WebView v0.1.7
- * Features added (additive, non-breaking):
- *  - Markdown rendering for assistant messages
- *  - Copy button per assistant message
- *  - Export Transcript button (📄)
- *  - Save Snapshot button (📷)
- *  - Arch mode tab
- *  - @skill: mention placeholder hint in textarea
+ * Bailu Agent WebView v1.1.9
+ * Modern, Elegant, and Accessible Sidebar Interface for Code-OSS & VS Code Ecosystem
  */
 
 /** Inline JavaScript source for the webview.
  *  Kept as a plain function string to avoid backtick / regex escaping issues
  *  when embedded inside a template literal in getWebviewHtml().
  */
-function getWebviewScript(nonce: string): string {
+function getWebviewScript(_nonce?: string): string {
   // We return the entire script body as a string — no template literals allowed inside.
   // nonce is injected into the <script nonce="..."> attribute by getWebviewHtml
   const scriptLines: string[] = [
@@ -51,7 +45,13 @@ function getWebviewScript(nonce: string): string {
     "    tokenSaved: 'Token saved — enter a new one to replace',",
     "    settingsTitle: 'Settings', defModel: 'Default model', defThink: 'Default thinking', lang: 'Language',",
     "    tinyfishTitle: 'TinyFish API Key (Search & Crawler)',",
-    "    export: 'Export transcript', snap: 'Save snapshot', copy: 'Copy'",
+    "    export: 'Export transcript', snap: 'Save snapshot', copy: 'Copy',",
+    "    welcomeTitle: 'What would you like to build?',",
+    "    welcomeDesc: 'Agentic coding assistant powered by BAILU AI & Antigravity engineering methodology.',",
+    "    qExplain: 'Explain active file',",
+    "    qRefactor: 'Refactor & clean code',",
+    "    qTests: 'Generate unit tests',",
+    "    qDebug: 'Debug & find defects'",
     "  },",
     "  id: {",
     "    newTask: 'Task baru', settings: 'Pengaturan', back: 'Kembali',",
@@ -64,7 +64,13 @@ function getWebviewScript(nonce: string): string {
     "    tokenSaved: 'Token tersimpan — isi untuk ganti',",
     "    settingsTitle: 'Pengaturan', defModel: 'Model default', defThink: 'Thinking default', lang: 'Bahasa',",
     "    tinyfishTitle: 'API Key TinyFish (Pencarian & Crawler)',",
-    "    export: 'Ekspor transkrip', snap: 'Simpan snapshot', copy: 'Salin'",
+    "    export: 'Ekspor transkrip', snap: 'Simpan snapshot', copy: 'Salin',",
+    "    welcomeTitle: 'Apa yang ingin Anda bangun hari ini?',",
+    "    welcomeDesc: 'Asisten coding agentic bertenaga BAILU AI & metodologi engineering Antigravity.',",
+    "    qExplain: 'Jelaskan file aktif',",
+    "    qRefactor: 'Refaktor & rapikan kode',",
+    "    qTests: 'Buat unit test otomatis',",
+    "    qDebug: 'Debug & cari error'",
     "  }",
     "};",
     "function t(key) { return (I18N[locale] || I18N.en)[key] || I18N.en[key]; }",
@@ -77,8 +83,8 @@ function getWebviewScript(nonce: string): string {
     "  var bn = $('btnNew'); if (bn) { bn.title = L.newTask; bn.setAttribute('aria-label', L.newTask); }",
     "  var bs = $('btnSet'); if (bs) { bs.title = L.settings; bs.setAttribute('aria-label', L.settings); }",
     "  var bb = $('btnBack'); if (bb) bb.setAttribute('aria-label', L.back);",
-    "  var bsn = $('btnSend'); if (bsn) bsn.textContent = L.send;",
-    "  var bst = $('btnStop'); if (bst) bst.textContent = L.stop;",
+    "  var bsn = $('btnSend'); if (bsn) { var spn = bsn.querySelector('span'); if (spn) spn.textContent = L.send; else bsn.textContent = L.send; }",
+    "  var bst = $('btnStop'); if (bst) { var sps = bst.querySelector('span'); if (sps) sps.textContent = '■ ' + L.stop; else bst.textContent = '■ ' + L.stop; }",
     "  var bsv = $('btnSave'); if (bsv) bsv.textContent = L.save;",
     "  var be = $('btnExport'); if (be) { be.title = L.export; be.setAttribute('aria-label', L.export); }",
     "  var bsn2 = $('btnSnap'); if (bsn2) { bsn2.title = L.snap; bsn2.setAttribute('aria-label', L.snap); }",
@@ -88,6 +94,12 @@ function getWebviewScript(nonce: string): string {
     "  var dt = $('lblDefThink'); if (dt) dt.textContent = L.defThink;",
     "  var ll = $('lblLocale'); if (ll) ll.textContent = L.lang;",
     "  var tf = $('lblTinyfish'); if (tf) tf.textContent = L.tinyfishTitle;",
+    "  var wt = $('welcomeTitle'); if (wt) wt.textContent = L.welcomeTitle;",
+    "  var wd = $('welcomeDesc'); if (wd) wd.textContent = L.welcomeDesc;",
+    "  var qe = $('qExplainText'); if (qe) qe.textContent = L.qExplain;",
+    "  var qr = $('qRefactorText'); if (qr) qr.textContent = L.qRefactor;",
+    "  var qt = $('qTestsText'); if (qt) qt.textContent = L.qTests;",
+    "  var qd = $('qDebugText'); if (qd) qd.textContent = L.qDebug;",
     "}",
     "",
     "/* Lightweight Markdown renderer — no external dependencies */",
@@ -136,7 +148,7 @@ function getWebviewScript(nonce: string): string {
     "  for (var li = 0; li < lines.length; li++) {",
     "    var line = lines[li];",
     "    if (line.startsWith('```')) {",
-    String.raw`      if (inCode) { html += '<div class="code-box"><div class="code-head"><span class="code-lang">' + escHtml(codeLang || 'code') + '</span><button type="button" class="code-copy" aria-label="Copy code">' + t('copy') + '</button></div><pre><code>' + escHtml(codeLines.join('\n')) + '</code></pre></div>'; inCode = false; codeLines = []; codeLang = ''; }`,
+    String.raw`      if (inCode) { html += '<div class="code-box"><div class="code-head"><span class="code-lang">' + escHtml(codeLang || 'code') + '</span><button type="button" class="code-copy" aria-label="Copy code"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> <span>' + t('copy') + '</span></button></div><pre><code>' + escHtml(codeLines.join('\n')) + '</code></pre></div>'; inCode = false; codeLines = []; codeLang = ''; }`,
     "      else { if (inTable) flushTable(); inCode = true; codeLang = line.slice(3).trim(); }",
     "      continue;",
     "    }",
@@ -152,7 +164,7 @@ function getWebviewScript(nonce: string): string {
     "    if (/^---+$/.test(line.trim())) { html += '<hr/>'; continue; }",
     "    html += '<p>' + inlineMd(escHtml(line)) + '</p>';",
     "  }",
-    String.raw`  if (inCode) html += '<div class="code-box"><div class="code-head"><span class="code-lang">' + escHtml(codeLang || 'code') + '</span><button type="button" class="code-copy" aria-label="Copy code">' + t('copy') + '</button></div><pre><code>' + escHtml(codeLines.join('\n')) + '</code></pre></div>';`,
+    String.raw`  if (inCode) html += '<div class="code-box"><div class="code-head"><span class="code-lang">' + escHtml(codeLang || 'code') + '</span><button type="button" class="code-copy" aria-label="Copy code"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> <span>' + t('copy') + '</span></button></div><pre><code>' + escHtml(codeLines.join('\n')) + '</code></pre></div>';`,
     "  if (inTable) flushTable();",
     String.raw`  html = html.replace(/<\/ul>(\s*)<ul>/g, '').replace(/<\/ol>(\s*)<ol>/g, '');`,
     "  return html;",
@@ -165,27 +177,45 @@ function getWebviewScript(nonce: string): string {
     "  else { var inp = $('input'); if (inp) inp.focus(); }",
     "}",
     "function addMsg(role, text) {",
+    "  var wc = $('welcomeCard');",
+    "  if (wc && role !== 'sys') wc.style.display = 'none';",
     "  var wrap = document.createElement('div');",
-    "  wrap.className = 'msg-wrap';",
+    "  wrap.className = 'msg-wrap ' + role;",
     "  var el = document.createElement('div');",
     "  el.className = 'msg ' + role;",
     "  var r = document.createElement('div');",
     "  r.className = 'role';",
     "  var rl = document.createElement('span');",
-    "  rl.textContent = role;",
+    "  rl.className = 'role-badge';",
+    "  var roleLabel = role;",
+    "  if (role === 'user') {",
+    "    roleLabel = '👤 ' + (locale === 'id' ? 'Anda' : 'You');",
+    "  } else if (role === 'assistant') {",
+    "    var curMdl = ($('model') || {}).value || 'Bailu';",
+    "    roleLabel = '🤖 ' + curMdl;",
+    "  } else if (role === 'sys') {",
+    "    roleLabel = '⚙ ' + (locale === 'id' ? 'Sistem' : 'System');",
+    "  }",
+    "  rl.textContent = roleLabel;",
     "  r.appendChild(rl);",
     "  if (role === 'assistant') {",
     "    var cpBtn = document.createElement('button');",
     "    cpBtn.type = 'button';",
     "    cpBtn.className = 'copy-btn';",
-    "    cpBtn.textContent = '⎎ ' + t('copy');",
+    '    var copySvg = \'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>\';',
+    "    cpBtn.innerHTML = copySvg + ' <span>' + t('copy') + '</span>';",
     "    cpBtn.title = t('copy');",
     "    cpBtn.setAttribute('aria-label', t('copy'));",
     "    cpBtn.onclick = function() {",
     "      var bodyEl = el.querySelector('.body');",
     "      var txt = bodyEl ? (bodyEl.dataset.raw || bodyEl.textContent || '') : '';",
     "      if (navigator.clipboard) {",
-    "        navigator.clipboard.writeText(txt).then(function(){ cpBtn.textContent = '✓'; setTimeout(function(){ cpBtn.textContent = '⎎ ' + t('copy'); }, 1500); });",
+    "        navigator.clipboard.writeText(txt).then(function(){",
+    "          cpBtn.innerHTML = '✓ ' + (locale === 'id' ? 'Tersalin' : 'Copied');",
+    "          setTimeout(function(){",
+    "            cpBtn.innerHTML = copySvg + ' <span>' + t('copy') + '</span>';",
+    "          }, 1500);",
+    "        });",
     "      }",
     "    };",
     "    r.appendChild(cpBtn);",
@@ -208,7 +238,7 @@ function getWebviewScript(nonce: string): string {
     "  if (!sel) return;",
     "  hydrating = true;",
     "  sel.innerHTML = '';",
-    "  var groups = { bookmarks: 'Bookmarks', auto: 'Auto', v28: '2.8', v27: '2.7', apex: 'Apex', fast: 'Fast', other: 'Other' };",
+    "  var groups = { bookmarks: 'Bookmarks', auto: 'Auto', v28: '2.8 Flagship', v27: '2.7 Line', apex: 'Apex & Frontier', fast: 'Dash & Edge', other: 'Other' };",
     "  var used = {};",
     "  var marked = (bookmarks || []).map(String);",
     "  var pinned = list.filter(function(m){ return marked.indexOf(m.id) >= 0; });",
@@ -233,6 +263,13 @@ function getWebviewScript(nonce: string): string {
     "  var list = opts.indexOf('auto') >= 0 ? opts : ['auto'].concat(opts);",
     "  list.forEach(function(tk) { var o = document.createElement('option'); o.value = tk; o.textContent = tk; sel.appendChild(o); });",
     "  sel.value = (current && list.indexOf(current) >= 0) ? current : (opts[0] || 'auto');",
+    "  if (!m || !m.thinking || !m.thinking.length) {",
+    "    sel.classList.add('no-think');",
+    "    sel.title = 'No reasoning adjustment for this model';",
+    "  } else {",
+    "    sel.classList.remove('no-think');",
+    "    sel.title = 'Reasoning Intensity: ' + opts.join(', ');",
+    "  }",
     "}",
     "function updateModelBadges(modelId) {",
     "  var bar = $('modelBadgeBar');",
@@ -250,7 +287,7 @@ function getWebviewScript(nonce: string): string {
     "  if (ctxLen) {",
     "    var bCtx = document.createElement('span');",
     "    bCtx.className = 'chip chip-ctx';",
-    "    bCtx.textContent = fmtNum(ctxLen) + ' ctx';",
+    "    bCtx.textContent = '⛁ ' + fmtNum(ctxLen) + ' ctx';",
     "    bCtx.title = 'Context window: ' + ctxLen.toLocaleString() + ' tokens';",
     "    bar.appendChild(bCtx);",
     "  }",
@@ -258,7 +295,7 @@ function getWebviewScript(nonce: string): string {
     "  if (maxOut) {",
     "    var bOut = document.createElement('span');",
     "    bOut.className = 'chip chip-out';",
-    "    bOut.textContent = fmtNum(maxOut) + ' out';",
+    "    bOut.textContent = '⚡ ' + fmtNum(maxOut) + ' out';",
     "    bOut.title = 'Max output: ' + maxOut.toLocaleString() + ' tokens';",
     "    bar.appendChild(bOut);",
     "  }",
@@ -278,17 +315,23 @@ function getWebviewScript(nonce: string): string {
     "  var bst = $('btnStop');",
     "  var bw = $('btnWeb');",
     "  var st = $('status');",
+    "  var dot = $('statusDot');",
+    "  var inp = $('input');",
     "  if (busy) {",
     "    if (bsn) bsn.style.display = 'none';",
     "    if (bst) { bst.style.display = 'inline-flex'; bst.disabled = false; }",
     "    if (bw) bw.disabled = true;",
+    "    if (inp) { inp.setAttribute('aria-disabled', 'true'); inp.setAttribute('readonly', ''); }",
     "    if (st) st.textContent = (locale === 'id' ? 'Memproses…' : 'Generating…');",
+    "    if (dot) { dot.className = 'status-dot dot-busy'; dot.title = locale === 'id' ? 'Model sedang memproses…' : 'Model is generating…'; }",
     "  } else {",
     "    if (bsn) { bsn.style.display = 'inline-flex'; bsn.disabled = false; }",
     "    if (bst) { bst.style.display = 'none'; }",
     "    if (bw) bw.disabled = false;",
+    "    if (inp) { inp.removeAttribute('aria-disabled'); inp.removeAttribute('readonly'); }",
     "    var mdlSel = $('model');",
     "    if (st && mdlSel) st.textContent = (locale === 'id' ? 'Siap' : 'Ready') + ' · ' + mdlSel.value;",
+    "    if (dot) { dot.className = 'status-dot dot-ready'; dot.title = locale === 'id' ? 'Siap — klik untuk bertanya' : 'Ready — type to chat'; }",
     "  }",
     "}",
     "function autoResizeInput() {",
@@ -310,22 +353,33 @@ function getWebviewScript(nonce: string): string {
     "document.addEventListener('click', function(e) {",
     "  var target = e.target;",
     "  if (!target) return;",
-    "  if (target.classList && target.classList.contains('code-copy')) {",
-    "    var box = target.closest('.code-box');",
+    "  var qc = target.closest('.quick-card');",
+    "  if (qc && qc.dataset.prompt) {",
+    "    var inp = $('input');",
+    "    if (inp) {",
+    "      inp.value = qc.dataset.prompt;",
+    "      autoResizeInput();",
+    "      inp.focus();",
+    "    }",
+    "    return;",
+    "  }",
+    "  if (target.classList && target.classList.contains('code-copy') || target.closest('.code-copy')) {",
+    "    var btn = target.closest('.code-copy') || target;",
+    "    var box = btn.closest('.code-box');",
     "    if (!box) return;",
     "    var codeEl = box.querySelector('pre code');",
     "    var txt = codeEl ? (codeEl.textContent || '') : '';",
     "    if (navigator.clipboard) {",
     "      navigator.clipboard.writeText(txt).then(function() {",
-    "        var prev = target.dataset.copied ? target.dataset.orig : target.textContent;",
-    "        target.dataset.copied = '1';",
-    "        target.dataset.orig = prev;",
-    "        target.textContent = '✓';",
+    "        var prev = btn.dataset.copied ? btn.dataset.orig : btn.innerHTML;",
+    "        btn.dataset.copied = '1';",
+    "        btn.dataset.orig = prev;",
+    "        btn.innerHTML = '✓ ' + (locale === 'id' ? 'Tersalin' : 'Copied');",
     "        setTimeout(function() {",
-    "          if (target.dataset.orig) {",
-    "            target.textContent = target.dataset.orig;",
-    "            delete target.dataset.copied;",
-    "            delete target.dataset.orig;",
+    "          if (btn.dataset.orig) {",
+    "            btn.innerHTML = btn.dataset.orig;",
+    "            delete btn.dataset.copied;",
+    "            delete btn.dataset.orig;",
     "          }",
     "        }, 1500);",
     "      });",
@@ -338,6 +392,7 @@ function getWebviewScript(nonce: string): string {
     "var bBack = $('btnBack'); if (bBack) bBack.onclick = function(){ show('chat'); };",
     "var bNew = $('btnNew'); if (bNew) bNew.onclick = function(){",
     "  activeStreamEl = null; var msgs = $('msgs'); if (msgs) msgs.innerHTML = '';",
+    "  var wc = $('welcomeCard'); if (wc) { if (msgs) msgs.appendChild(wc); wc.style.display = 'flex'; }",
     "  welcomed = true; addMsg('sys', t('taskNew'));",
     "  setBusy(false);",
     "  var inp = $('input'); if (inp) { inp.value = ''; inp.style.height = ''; }",
@@ -354,7 +409,7 @@ function getWebviewScript(nonce: string): string {
     "  var q = ((inpEl && inpEl.value) || '').trim();",
     "  if (!q || busy) { if (!q) addMsg('sys', 'Type a query or URL, then press Web.'); return; }",
     "  addMsg('user', q);",
-    "  var isUrl = /^https?:\/\//i.test(q);",
+    "  var isUrl = q.startsWith('http://') || q.startsWith('https://');",
     "  addMsg('sys', isUrl ? 'Crawling page via TinyFish…' : 'Searching web via TinyFish…');",
     "  if (inpEl) { inpEl.value = ''; inpEl.style.height = ''; }",
     "  setBusy(true);",
@@ -417,6 +472,10 @@ function getWebviewScript(nonce: string): string {
     "bindKeyInput($('tinyfishApiKey'));",
     "",
     "var bSave = $('btnSave'); if (bSave) bSave.onclick = function(){",
+    "  bSave.disabled = true;",
+    "  var origLabel = bSave.textContent;",
+    "  bSave.textContent = (locale === 'id' ? 'Menyimpan & Mengetes…' : 'Saving & Testing…');",
+    "  setTimeout(function(){ bSave.disabled = false; bSave.textContent = t('save'); }, 6000);",
     "  var ak = $('apiKey');",
     "  var akVal = (ak && ak.dataset.saved === '1') ? '' : ((ak && ak.value) || '');",
     "  var tf = $('tinyfishApiKey');",
@@ -524,11 +583,14 @@ function getWebviewScript(nonce: string): string {
     "    hydrating = false;",
     "  }",
     "  if (m.type === 'status') { var stEl2 = $('status'); if (stEl2) stEl2.textContent = m.text; }",
-    "  if (m.type === 'setStatus') { var ssEl = $('setStatus'); if (ssEl) ssEl.textContent = m.text; }",
+    "  if (m.type === 'setStatus') {",
+    "    var ssEl = $('setStatus'); if (ssEl) ssEl.textContent = m.text;",
+    "    var bsv = $('btnSave'); if (bsv) { bsv.disabled = false; bsv.textContent = t('save'); }",
+    "  }",
     "  if (m.type === 'delta') {",
     "    if (!activeStreamEl) { activeStreamEl = addMsg('assistant', ''); if (activeStreamEl) activeStreamEl.dataset.stream = '1'; }",
     "    activeStreamEl.dataset.raw = (activeStreamEl.dataset.raw || '') + m.text;",
-    "    activeStreamEl.innerHTML = renderMd(activeStreamEl.dataset.raw);",
+    '    activeStreamEl.innerHTML = renderMd(activeStreamEl.dataset.raw) + \'<span class="typing-cursor" aria-hidden="true">▍</span>\';',
     "    var msgs2 = $('msgs');",
     "    if (msgs2) {",
     "      var isNearBottom = msgs2.scrollHeight - msgs2.scrollTop - msgs2.clientHeight < 120;",
@@ -536,6 +598,9 @@ function getWebviewScript(nonce: string): string {
     "    }",
     "  }",
     "  if (m.type === 'done') {",
+    "    if (activeStreamEl) {",
+    "      activeStreamEl.innerHTML = renderMd(activeStreamEl.dataset.raw || '');",
+    "    }",
     "    activeStreamEl = null;",
     "    document.querySelectorAll('[data-stream]').forEach(function(n){ n.removeAttribute('data-stream'); });",
     "    setBusy(false);",
@@ -578,23 +643,26 @@ body.theme-light { --bg: #f4f6f9; --panel: #ffffff; --fg: #1a2230; --muted: #5c6
 .logo-img { width: 22px; height: 22px; flex-shrink: 0; }
 .logo { font-weight: 700; letter-spacing: .02em; }
 .logo span { color: var(--acc2); }
-.brand-actions { display: flex; gap: 3px; }
+.brand-actions { display: flex; gap: 3px; align-items: center; }
 .row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
 select, input, textarea { background: var(--input); color: var(--fg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; font: inherit; }
 select:focus, input:focus, textarea:focus, button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 select { flex: 1; min-width: 0; }
 #thinking { max-width: 92px; }
-.modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(42px, 1fr)); gap: 3px; margin-top: 8px; }
+#thinking.no-think { opacity: 0.65; }
+.modes { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; margin-top: 8px; }
+@media (max-width: 260px) { .modes { grid-template-columns: repeat(3, 1fr); } }
 .modes button { border: 1px solid var(--border); background: color-mix(in srgb, var(--panel) 80%, transparent); color: var(--fg); border-radius: 6px; padding: 4px 2px; font-size: 11px; font-weight: 500; cursor: pointer; text-align: center; transition: all .15s ease; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .modes button:hover { border-color: var(--acc); color: var(--acc2); }
 .modes button.on { background: var(--btn); color: var(--btnfg); border-color: transparent; font-weight: 600; }
-.iconbtn, .primary, .ghost { border: 1px solid var(--border); background: color-mix(in srgb, var(--panel) 80%, transparent); color: var(--fg); border-radius: 8px; padding: 6px 10px; cursor: pointer; transition: background .15s ease, border-color .15s ease, transform .12s ease; font-size: 12px; }
+.iconbtn, .primary, .ghost { border: 1px solid var(--border); background: color-mix(in srgb, var(--panel) 80%, transparent); color: var(--fg); border-radius: 8px; padding: 6px 10px; cursor: pointer; transition: background .15s ease, border-color .15s ease, transform .12s ease; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
 .modes button:hover, .iconbtn:hover, .ghost:hover { border-color: var(--acc); }
 .primary { background: var(--btn); color: var(--btnfg); border-color: transparent; font-weight: 600; }
 .primary:active, .ghost:active, .iconbtn:active { transform: translateY(1px); }
 .iconbtn { padding: 5px 8px; min-width: 30px; font-size: 12px; }
+.iconbtn svg { display: block; flex-shrink: 0; }
 .model-badge-bar { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; align-items: center; min-height: 18px; }
-.chip { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); line-height: 1.2; letter-spacing: 0.02em; user-select: none; }
+.chip { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); line-height: 1.2; letter-spacing: 0.02em; user-select: none; display: inline-flex; align-items: center; gap: 3px; }
 .chip-ctx { background: color-mix(in srgb, var(--acc) 14%, transparent); color: var(--acc2); border-color: color-mix(in srgb, var(--acc) 32%, transparent); }
 .chip-out { background: color-mix(in srgb, #10b981 14%, transparent); color: #34d399; border-color: color-mix(in srgb, #10b981 32%, transparent); }
 .chip-tag { background: color-mix(in srgb, var(--panel) 90%, transparent); color: var(--fg); opacity: 0.9; }
@@ -602,10 +670,14 @@ select { flex: 1; min-width: 0; }
 .msgs { flex: 1; overflow: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
 .msg-wrap { position: relative; }
 .msg { border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; background: var(--panel); word-break: break-word; line-height: 1.5; }
-.msg.user { border-color: color-mix(in srgb, var(--acc) 45%, var(--border)); }
+.msg.user { background: color-mix(in srgb, var(--acc) 9%, var(--panel)); border-color: color-mix(in srgb, var(--acc) 38%, var(--border)); }
+.msg.user .role { color: var(--acc); }
+.msg.assistant { border-color: var(--border); }
+.msg.assistant .role { color: var(--acc2); }
 .msg.sys { color: var(--muted); font-size: 12px; }
-.role { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--acc2); margin-bottom: 4px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
-.copy-btn { font-size: 10px; cursor: pointer; background: none; border: none; color: var(--muted); padding: 1px 4px; border-radius: 4px; transition: color .15s; letter-spacing: 0; text-transform: none; }
+.role { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+.role-badge { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; }
+.copy-btn { font-size: 10px; cursor: pointer; background: none; border: none; color: var(--muted); padding: 1px 4px; border-radius: 4px; transition: color .15s; letter-spacing: 0; text-transform: none; display: inline-flex; align-items: center; gap: 3px; }
 .copy-btn:hover { color: var(--acc2); }
 .md h1, .md h2, .md h3, .md h4 { margin: .5em 0 .25em; font-weight: 700; }
 .md h1 { font-size: 1.2em; } .md h2 { font-size: 1.1em; } .md h3 { font-size: 1em; }
@@ -616,7 +688,7 @@ select { flex: 1; min-width: 0; }
 .code-box { border: 1px solid var(--border); border-radius: 8px; margin: 0.6em 0; overflow: hidden; background: var(--code-bg); }
 .code-head { display: flex; justify-content: space-between; align-items: center; padding: 4px 10px; background: color-mix(in srgb, var(--panel) 75%, var(--bg)); border-bottom: 1px solid var(--border); font-size: 11px; }
 .code-lang { font-family: var(--vscode-editor-font-family), monospace; font-size: 10.5px; color: var(--muted); text-transform: lowercase; font-weight: 600; }
-.code-copy { background: none; border: 1px solid transparent; color: var(--muted); font-size: 10px; cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: all 0.15s ease; }
+.code-copy { background: none; border: 1px solid transparent; color: var(--muted); font-size: 10px; cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 3px; }
 .code-copy:hover { color: var(--fg); background: color-mix(in srgb, var(--panel) 80%, transparent); border-color: var(--border); }
 .code-box pre { margin: 0 !important; border: none !important; border-radius: 0 !important; padding: 8px 10px !important; }
 .md pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; overflow-x: auto; margin: .5em 0; }
@@ -629,16 +701,38 @@ select { flex: 1; min-width: 0; }
 .md table { border-collapse: collapse; width: 100%; margin: .4em 0; font-size: .9em; }
 .md th, .md td { border: 1px solid var(--border); padding: 4px 8px; text-align: left; }
 .md th { background: var(--code-bg); font-weight: 700; }
+.typing-cursor { display: inline-block; color: var(--acc2); animation: blinkCursor 0.8s infinite; font-weight: 700; margin-left: 2px; }
+@keyframes blinkCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* Welcome Card & Quick Starts */
+.welcome-card { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 18px 8px 12px; margin: auto 0; gap: 6px; }
+.welcome-badge { font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 12px; background: color-mix(in srgb, var(--acc) 16%, transparent); color: var(--acc2); border: 1px solid color-mix(in srgb, var(--acc) 30%, transparent); }
+.welcome-title { font-size: 14px; font-weight: 700; color: var(--fg); margin-top: 2px; }
+.welcome-desc { font-size: 11.5px; color: var(--muted); max-width: 280px; line-height: 1.4; }
+.quick-prompts { display: grid; grid-template-columns: 1fr; gap: 6px; width: 100%; max-width: 320px; margin-top: 8px; }
+@media (min-width: 270px) { .quick-prompts { grid-template-columns: 1fr 1fr; } }
+.quick-card { display: flex; align-items: center; gap: 6px; padding: 7px 9px; background: color-mix(in srgb, var(--panel) 85%, transparent); border: 1px solid var(--border); border-radius: 8px; text-align: left; cursor: pointer; color: var(--fg); font-size: 11px; transition: all 0.18s ease; }
+.quick-card:hover { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 10%, var(--panel)); transform: translateY(-1px); }
+.quick-icon { font-size: 12px; flex-shrink: 0; }
+.quick-text { font-weight: 500; line-height: 1.25; }
+
 .composer { border-top: 1px solid var(--border); padding: 10px; }
 textarea { width: 100%; min-height: 64px; resize: vertical; }
 .bar { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; gap: 8px; }
+.status-wrap { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; overflow: hidden; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; transition: background 0.2s ease; }
+.dot-ready { background: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.5); }
+.dot-busy { background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.6); animation: dotPulse 1.2s infinite ease-in-out; }
+@keyframes dotPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
 .bar-actions { display: flex; gap: 6px; align-items: center; }
 #btnStop { display: none; background: color-mix(in srgb, #ef4444 18%, transparent); border-color: #ef4444; color: #fca5a5; font-weight: 600; }
 #btnStop:hover { background: #ef4444; color: #fff; }
-.status { color: var(--muted); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.status { color: var(--muted); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .screen { display: none; flex-direction: column; height: 100%; }
 .screen.on { display: flex; }
-.form { padding: 14px; display: flex; flex-direction: column; gap: 10px; overflow: auto; }
+.form { padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow: auto; }
+.setting-group { background: color-mix(in srgb, var(--panel) 60%, var(--bg)); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.setting-group-title { font-size: 11px; font-weight: 700; color: var(--fg); text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.85; margin-bottom: 2px; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); padding-bottom: 4px; }
 label { font-size: 11px; color: var(--muted); }
 .hint { color: var(--muted); font-size: 12px; line-height: 1.4; }
 .token { letter-spacing: .04em; }
@@ -674,7 +768,7 @@ export function getWebviewHtml(
     `<style>${CSS}</style>`,
     "</head>",
     "<body>",
-    '<div id="chat" class="app screen on" role="region" aria-label="Percakapan Bailu Agent">',
+    '<div id="chat" class="app screen on" role="region" aria-label="Bailu Agent Chat">',
     '  <div class="top">',
     '    <div class="brand">',
     '      <div class="brand-left">',
@@ -682,10 +776,18 @@ export function getWebviewHtml(
     '        <div class="logo">Bailu <span>Agent</span></div>',
     "      </div>",
     '      <div class="brand-actions">',
-    '        <button type="button" class="iconbtn" id="btnExport" title="Export transcript" aria-label="Export transcript">\uD83D\uDCC4</button>',
-    '        <button type="button" class="iconbtn" id="btnSnap" title="Save snapshot" aria-label="Save snapshot">\uD83D\uDCF7</button>',
-    '        <button type="button" class="iconbtn" id="btnNew" title="New task" aria-label="New task">\uFF0B</button>',
-    '        <button type="button" class="iconbtn" id="btnSet" title="Settings" aria-label="Settings">\u2699</button>',
+    '        <button type="button" class="iconbtn" id="btnExport" title="Export transcript" aria-label="Export transcript">',
+    '          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+    "        </button>",
+    '        <button type="button" class="iconbtn" id="btnSnap" title="Save snapshot" aria-label="Save snapshot">',
+    '          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+    "        </button>",
+    '        <button type="button" class="iconbtn" id="btnNew" title="New task" aria-label="New task">',
+    '          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+    "        </button>",
+    '        <button type="button" class="iconbtn" id="btnSet" title="Settings" aria-label="Settings">',
+    '          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+    "        </button>",
     "      </div>",
     "    </div>",
     '    <div class="modes" role="tablist" aria-label="Agent">',
@@ -703,22 +805,53 @@ export function getWebviewHtml(
     '    <div class="row">',
     '      <label class="sr" for="model">Model</label>',
     '      <select id="model" aria-label="Model"></select>',
-    '      <button type="button" class="iconbtn star" id="btnStar" title="Bookmark model" aria-label="Bookmark model">\u2606</button>',
+    '      <button type="button" class="iconbtn star" id="btnStar" title="Bookmark model" aria-label="Bookmark model">☆</button>',
     '      <label class="sr" for="thinking">Thinking</label>',
     '      <select id="thinking" title="Thinking" aria-label="Thinking"></select>',
     "    </div>",
     '    <div class="model-badge-bar" id="modelBadgeBar" role="note" aria-label="Model specifications"></div>',
     "  </div>",
-    '  <div class="msgs" id="msgs" role="log" aria-live="polite"></div>',
+    '  <div class="msgs" id="msgs" role="log" aria-live="polite">',
+    '    <div class="welcome-card" id="welcomeCard">',
+    '      <div class="welcome-badge">BAILU AI AGENT</div>',
+    '      <div class="welcome-title" id="welcomeTitle">What would you like to build?</div>',
+    '      <div class="welcome-desc" id="welcomeDesc">Agentic coding assistant powered by BAILU AI &amp; Antigravity engineering methodology.</div>',
+    '      <div class="quick-prompts">',
+    '        <button type="button" class="quick-card" data-prompt="Explain the active file, its key components, and architecture pattern.">',
+    '          <span class="quick-icon">💡</span>',
+    '          <span class="quick-text" id="qExplainText">Explain active file</span>',
+    "        </button>",
+    '        <button type="button" class="quick-card" data-prompt="Refactor this code for cleaner architecture, security, and performance.">',
+    '          <span class="quick-icon">✨</span>',
+    '          <span class="quick-text" id="qRefactorText">Refactor &amp; clean</span>',
+    "        </button>",
+    '        <button type="button" class="quick-card" data-prompt="Generate comprehensive unit tests for this file following TDD.">',
+    '          <span class="quick-icon">🧪</span>',
+    '          <span class="quick-text" id="qTestsText">Generate unit tests</span>',
+    "        </button>",
+    '        <button type="button" class="quick-card" data-prompt="Investigate and systematically debug any potential defects or edge cases.">',
+    '          <span class="quick-icon">🔍</span>',
+    '          <span class="quick-text" id="qDebugText">Debug &amp; find bugs</span>',
+    "        </button>",
+    "      </div>",
+    "    </div>",
+    "  </div>",
     '  <div class="composer">',
-    '    <label class="sr" for="input">Pesan</label>',
+    '    <label class="sr" for="input">Message</label>',
     '    <textarea id="input" placeholder="Task\u2026 (Enter send, Shift+Enter newline)"></textarea>',
     '    <div class="bar">',
-    '      <div class="status" id="status" role="status">Siap</div>',
+    '      <div class="status-wrap">',
+    '        <span class="status-dot dot-ready" id="statusDot" aria-hidden="true"></span>',
+    '        <span class="status" id="status" role="status">Ready</span>',
+    "      </div>",
     '      <div class="bar-actions">',
-    '        <button type="button" class="ghost" id="btnWeb" title="Web search" aria-label="Web search">Web</button>',
-    '        <button type="button" class="ghost" id="btnStop" title="Stop" aria-label="Stop generation">Stop</button>',
-    '        <button type="button" class="primary" id="btnSend" title="Send" aria-label="Send message">Send</button>',
+    '        <button type="button" class="ghost" id="btnWeb" title="Web search &amp; crawler" aria-label="Web search">',
+    '          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> <span>Web</span>',
+    "        </button>",
+    '        <button type="button" class="ghost" id="btnStop" title="Stop" aria-label="Stop generation"><span>■ Stop</span></button>',
+    '        <button type="button" class="primary" id="btnSend" title="Send (Enter)" aria-label="Send message">',
+    '          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> <span>Send</span>',
+    "        </button>",
     "      </div>",
     "    </div>",
     "  </div>",
@@ -731,42 +864,57 @@ export function getWebviewHtml(
     "    </button>",
     "  </div>",
     "</div>",
-    '<div id="settings" class="app screen" role="region" aria-label="Pengaturan">',
+    '<div id="settings" class="app screen" role="region" aria-label="Settings">',
     '  <div class="top">',
     '    <div class="brand">',
     '      <div class="brand-left">',
     `        <img class="logo-img" src="${logoUri}" alt=""/>`,
     '        <div class="logo" id="lblSettingsTitle">Settings</div>',
     "      </div>",
-    '      <button type="button" class="iconbtn" id="btnBack" aria-label="Kembali">\u2190</button>',
+    '      <button type="button" class="iconbtn" id="btnBack" aria-label="Back">',
+    '        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>',
+    "      </button>",
     "    </div>",
     "  </div>",
     '  <div class="form">',
-    '    <div class="hint" id="hintSecret">The token is stored in VS Code SecretStorage, not in settings.json.</div>',
-    '    <label for="apiKey" id="lblToken">API Token</label>',
-    '    <input class="token" id="apiKey" type="password" autocomplete="off" placeholder="sk-\u2026 or Bailu token"/>',
-    '    <label for="baseUrl">Base URL</label>',
-    '    <input id="baseUrl" placeholder="https://bailucode.com/openapi/v1"/>',
-    '    <label for="tinyfishApiKey" id="lblTinyfish">TinyFish API Key (Search &amp; Crawler)</label>',
-    '    <input class="token" id="tinyfishApiKey" type="password" autocomplete="off" placeholder="sk-tinyfish-\u2026"/>',
-    '    <label for="defModel" id="lblDefModel">Default model</label>',
-    '    <select id="defModel"></select>',
-    '    <label for="defThink" id="lblDefThink">Default thinking</label>',
-    '    <select id="defThink"></select>',
-    '    <label for="locale" id="lblLocale">Language</label>',
-    '    <select id="locale" aria-label="Language">',
-    '      <option value="en">English</option>',
-    '      <option value="id">Bahasa Indonesia</option>',
-    "    </select>",
-    '    <label for="theme" id="lblTheme">Theme</label>',
-    '    <select id="theme" aria-label="Theme">',
-    '      <option value="auto">Auto</option>',
-    '      <option value="dark">Dark</option>',
-    '      <option value="light">Light</option>',
-    "    </select>",
+    '    <div class="setting-group">',
+    '      <div class="setting-group-title">Authentication &amp; Keys</div>',
+    '      <div class="hint" id="hintSecret">The token is stored in VS Code SecretStorage, not in settings.json.</div>',
+    '      <label for="apiKey" id="lblToken">API Token</label>',
+    '      <input class="token" id="apiKey" type="password" autocomplete="off" placeholder="sk-\u2026 or Bailu token"/>',
+    '      <label for="baseUrl">Base URL</label>',
+    '      <input id="baseUrl" placeholder="https://bailucode.com/openapi/v1"/>',
+    '      <label for="tinyfishApiKey" id="lblTinyfish">TinyFish API Key (Search &amp; Crawler)</label>',
+    '      <input class="token" id="tinyfishApiKey" type="password" autocomplete="off" placeholder="sk-tinyfish-\u2026"/>',
+    "    </div>",
+    '    <div class="setting-group">',
+    '      <div class="setting-group-title">Model &amp; Reasoning Defaults</div>',
+    '      <label for="defModel" id="lblDefModel">Default model</label>',
+    '      <select id="defModel"></select>',
+    '      <label for="defThink" id="lblDefThink">Default thinking</label>',
+    '      <select id="defThink"></select>',
+    "    </div>",
+    '    <div class="setting-group">',
+    '      <div class="setting-group-title">Preferences</div>',
+    '      <label for="locale" id="lblLocale">Language</label>',
+    '      <select id="locale" aria-label="Language">',
+    '        <option value="en">English</option>',
+    '        <option value="id">Bahasa Indonesia</option>',
+    "      </select>",
+    '      <label for="theme" id="lblTheme">Theme</label>',
+    '      <select id="theme" aria-label="Theme">',
+    '        <option value="auto">Auto</option>',
+    '        <option value="dark">Dark</option>',
+    '        <option value="light">Light</option>',
+    "      </select>",
+    "    </div>",
+    '    <div class="setting-group">',
+    '      <div class="setting-group-title">Telemetry &amp; Usage</div>',
+    '      <div class="status" id="setStatus" role="status"></div>',
+    '      <div class="hint" id="usageBox">Tokens: \u2014</div>',
+    '      <div class="hint" id="homeBox">Global config: \u2014</div>',
+    "    </div>",
     '    <button type="button" class="primary" id="btnSave" aria-label="Save settings and test connection">Save &amp; test connection</button>',
-    '    <div class="status" id="setStatus" role="status"></div>',
-    '    <div class="hint" id="usageBox">Tokens: \u2014</div>',
     '    <div class="foot-wrap">',
     '      <button type="button" class="foot-credit" id="footerCredit2" title="https://alsyundawy.com" aria-label="Developer website">',
     '        <span class="foot-sparkle" aria-hidden="true">✦</span>',

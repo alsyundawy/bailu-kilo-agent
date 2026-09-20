@@ -99,10 +99,14 @@ function readJson<T>(file: string, fallback: T): T {
 
 function writeJson(file: string, obj: unknown): void {
   ensureHome();
-  fs.writeFileSync(file, JSON.stringify(obj, null, 2), {
-    encoding: "utf8",
-    mode: 0o600,
-  });
+  try {
+    fs.writeFileSync(file, JSON.stringify(obj, null, 2), {
+      encoding: "utf8",
+      mode: 0o600,
+    });
+  } catch {
+    /* ignore write errors in restricted or read-only environments */
+  }
 }
 
 export function loadHomeConfig(): HomeConfig {

@@ -1,4 +1,3 @@
-"use strict";
 const assert = require("node:assert");
 const path = require("node:path");
 const fs = require("node:fs");
@@ -39,7 +38,7 @@ assert.ok(
 );
 
 const orig = Module._load;
-Module._load = function (req, parent, isMain) {
+Module._load = (req, parent, isMain) => {
   if (req === "vscode") {
     return {
       window: { registerWebviewViewProvider: () => ({ dispose() {} }) },
@@ -95,6 +94,10 @@ assert.ok(
 assert.ok(
   CATALOG.some((m) => m.id === "bailu-2.8-nvfp8"),
   "bailu-2.8-nvfp8 present",
+);
+assert.ok(
+  CATALOG.some((m) => m.id === "bailu-turing"),
+  "bailu-turing present",
 );
 
 assert.ok(html.includes('id="modelBadgeBar"'), "model badge bar present");

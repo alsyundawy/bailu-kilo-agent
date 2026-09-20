@@ -2,16 +2,18 @@ import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as vscode from "vscode";
-import { CATALOG, promptFor, Thinking } from "./models";
-import { getWebviewHtml } from "./webview";
-import { buildSystemPrompt, loadWorkspaceExtras, lookupSkill } from "./skills";
 import * as home from "./home";
+import { CATALOG, promptFor, type Thinking } from "./models";
+import { buildSystemPrompt, loadWorkspaceExtras, lookupSkill } from "./skills";
+import { getWebviewHtml } from "./webview";
 
 const SECRET_KEY = "bailu.apiToken";
 const MAX_HISTORY = 24;
 const FETCH_MS = 600000;
 const MAX_ACTIVE_CHARS = 80000;
 const MAX_OUT_CAP = 262144;
+const EXTENSION_VERSION = "1.1.9";
+const USER_AGENT = `Mozilla/5.0 (compatible; BailuAgent/${EXTENSION_VERSION}; +https://bailucode.com) AppleWebKit/537.36`;
 
 export interface SettingsMessage {
   apiKey?: string;
@@ -36,6 +38,9 @@ export function activate(context: vscode.ExtensionContext): void {
   home.ensureHome();
   applyHomeToVscode().catch(() => {
     /* ignore background home synchronization errors */
+  });
+  checkInstallOrUpdateRestart(context).catch(() => {
+    /* ignore restart prompt error */
   });
   const provider = new BailuViewProvider(context);
   context.subscriptions.push(
@@ -482,7 +487,7 @@ class BailuViewProvider
       const n = await this.pingModels();
       this.post({
         type: "setStatus",
-        text: "Connected. " + n + " model dari API.",
+        text: "Connected. " + n + " models from API.",
       });
       this.post({
         type: "status",
@@ -530,7 +535,7 @@ class BailuViewProvider
 
   private async pingModels(): Promise<number> {
     const token = await this.ctx.secrets.get(SECRET_KEY);
-    if (!token) throw new Error("Token kosong");
+    if (!token) throw new Error("API token is missing");
     const base = normalizeBase(cfg().get<string>("baseUrl") || "");
     const ac = new AbortController();
     const t = setTimeout(() => ac.abort(), 20000);
@@ -599,7 +604,7 @@ class BailuViewProvider
     this.abort = new AbortController();
     const timer = setTimeout(() => this.abort?.abort(), FETCH_MS);
     this.streaming = true;
-    this.post({ type: "status", text: "Memanggil " + model + "…" });
+    this.post({ type: "status", text: "Calling " + model + "…" });
 
     const configured = Number(cfg().get("maxTokens") || 0);
     const modelCap = Math.min(meta?.maxOut || 65536, MAX_OUT_CAP);
@@ -1132,7 +1137,7 @@ async function tinyfishSearch(query: string): Promise<string> {
       const res = await fetch(url, {
         headers: {
           "X-API-Key": key,
-          "User-Agent": "Mozilla/5.0 (compatible; BailuAgent/1.1.8)",
+          "User-Agent": USER_AGENT,
           Accept: "application/json",
         },
         signal: ac.signal,
@@ -1177,7 +1182,7 @@ async function tinyfishFetch(targetUrl: string): Promise<string> {
         headers: {
           "X-API-Key": key,
           "Content-Type": "application/json",
-          "User-Agent": "Mozilla/5.0 (compatible; BailuAgent/1.1.8)",
+          "User-Agent": USER_AGENT,
           Accept: "application/json",
         },
         body: JSON.stringify({ urls: [targetUrl] }),
@@ -1223,8 +1228,7 @@ async function ddgSearch(query: string): Promise<string> {
   try {
     const res = await fetch(url, {
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (compatible; BailuAgent/1.1.8; +https://bailucode.com) AppleWebKit/537.36",
+        "User-Agent": USER_AGENT,
         Accept: "text/html",
       },
       signal: ac.signal,
@@ -1302,8 +1306,7 @@ async function fetchText(url: string, ms: number): Promise<string> {
   try {
     const res = await fetch(url, {
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (compatible; BailuAgent/1.1.8; +https://bailucode.com) AppleWebKit/537.36",
+        "User-Agent": USER_AGENT,
         Accept: "application/json,text/html",
       },
       signal: ac.signal,
@@ -1312,5 +1315,87 @@ async function fetchText(url: string, ms: number): Promise<string> {
     return await res.text();
   } finally {
     clearTimeout(t);
+  }
+}
+
+async function checkInstallOrUpdateRestart(
+  context: vscode.ExtensionContext,
+): Promise<void> {
+  const currentVersion =
+    context.extension?.packageJSON?.version || EXTENSION_VERSION;
+  const lastVersion = context.globalState?.get<string>(
+    "bailu.lastActivatedVersion",
+  );
+  let isNewOrChanged = false;
+
+  let currentMtime = 0;
+  try {
+    const pkgPath = path.join(context.extensionUri.fsPath, "package.json");
+    if (fs.existsSync(pkgPath)) {
+      currentMtime = fs.statSync(pkgPath).mtimeMs;
+    }
+  } catch {
+    /* ignore stat error */
+  }
+
+  const lastMtime =
+    context.globalState?.get<number>("bailu.lastActivatedMtime") || 0;
+  const lastPath = context.globalState?.get<string>("bailu.lastActivatedPath");
+
+  if (!lastVersion) {
+    // Fresh install or download
+    isNewOrChanged = true;
+  } else if (lastVersion !== currentVersion) {
+    // Update or upgrade
+    isNewOrChanged = true;
+  } else if (lastPath && lastPath !== context.extensionUri.fsPath) {
+    // Moved or reinstalled into different directory
+    isNewOrChanged = true;
+  } else if (
+    currentMtime > 0 &&
+    lastMtime > 0 &&
+    Math.abs(currentMtime - lastMtime) > 2000
+  ) {
+    // Reinstall / package overwrite of the same version
+    isNewOrChanged = true;
+  }
+
+  if (isNewOrChanged && context.globalState) {
+    await context.globalState.update(
+      "bailu.lastActivatedVersion",
+      currentVersion,
+    );
+    if (currentMtime > 0) {
+      await context.globalState.update(
+        "bailu.lastActivatedMtime",
+        currentMtime,
+      );
+    }
+    await context.globalState.update(
+      "bailu.lastActivatedPath",
+      context.extensionUri.fsPath,
+    );
+
+    const isFirstInstall = !lastVersion;
+    const actionPrompt = isFirstInstall
+      ? `Bailu Agent v${currentVersion} installed. Restart Extension Host or reload window to complete setup.`
+      : `Bailu Agent updated/reinstalled to v${currentVersion}. Restart Extension Host or reload window to apply all changes.`;
+
+    vscode.window
+      .showInformationMessage(
+        actionPrompt,
+        "Restart Extension Host",
+        "Reload Window",
+        "Later",
+      )
+      ?.then(async (action) => {
+        if (action === "Restart Extension Host") {
+          await vscode.commands.executeCommand(
+            "workbench.action.restartExtensionHost",
+          );
+        } else if (action === "Reload Window") {
+          await vscode.commands.executeCommand("workbench.action.reloadWindow");
+        }
+      });
   }
 }

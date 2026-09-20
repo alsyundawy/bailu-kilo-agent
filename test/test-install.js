@@ -1,4 +1,3 @@
-"use strict";
 const assert = require("node:assert");
 const path = require("node:path");
 const fs = require("node:fs");
@@ -12,11 +11,16 @@ const vsixPath = path.join(root, vsixName);
 
 const UNZIP_BIN = fs.existsSync("/usr/bin/unzip") ? "/usr/bin/unzip" : "unzip";
 const TAR_BIN = fs.existsSync("/usr/bin/tar") ? "/usr/bin/tar" : "tar";
-const NPM_BIN = fs.existsSync("/usr/local/bin/npm")
-  ? "/usr/local/bin/npm"
-  : fs.existsSync("/usr/bin/npm")
-    ? "/usr/bin/npm"
-    : "npm";
+function resolveNpmBin() {
+  if (fs.existsSync("/usr/local/bin/npm")) {
+    return "/usr/local/bin/npm";
+  }
+  if (fs.existsSync("/usr/bin/npm")) {
+    return "/usr/bin/npm";
+  }
+  return "npm";
+}
+const NPM_BIN = resolveNpmBin();
 const SECURE_ENV = {
   ...process.env,
   PATH: "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
@@ -264,7 +268,7 @@ const mockVscode = {
 
 // Hook require("vscode") for the installed module
 const origLoad = Module._load;
-Module._load = function (request, parent, isMain) {
+Module._load = (request, parent, isMain) => {
   if (request === "vscode") {
     return mockVscode;
   }
@@ -346,7 +350,7 @@ assert.doesNotThrow(
 );
 
 // Simulate Webview resolution
-let receivedMessages = [];
+const receivedMessages = [];
 const mockWebviewView = {
   webview: {
     options: {},
