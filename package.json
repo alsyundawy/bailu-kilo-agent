@@ -1,7 +1,24 @@
 {
   "name": "bailu-kilo-agent",
   "displayName": "Bailu Agent",
-  "description": "Agentic coding sidebar for BAILU AI — Kilo-style panel, model picker, Auto, thinking, API token.",
+  "description": "Next-generation agentic AI coding sidebar for BAILU AI cloud — 39 live models (bailu-turing, bailu-2.8, bailu-apex), 7 reasoning levels, Kilo-style panel, deep web search, mandatory restart protocol, and native Antigravity Superpowers methodology.",
+  "keywords": [
+    "ai",
+    "bailu",
+    "agentic",
+    "coding assistant",
+    "llm",
+    "chat",
+    "claude",
+    "reasoning",
+    "code generation",
+    "web search",
+    "kilo",
+    "antigravity",
+    "tdd",
+    "copilot",
+    "sidebar"
+  ],
   "version": "1.1.9",
   "files": [
     "out/**",
@@ -38,8 +55,10 @@
     "ui"
   ],
   "categories": [
+    "AI",
     "Machine Learning",
     "Programming Languages",
+    "Chat",
     "Other"
   ],
   "main": "./out/extension.js",

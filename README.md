@@ -84,17 +84,73 @@ This edition (**v1.1.9**) represents a complete architectural, security, accessi
 
 ## ✨ Key Features
 
-- **⚡ 39 Live Models**: Full alignment with the Bailu AI cloud dashboard, supporting context windows up to **1,048,576 tokens** (1M) and single-reply output limits up to **262,144 tokens**.
-- **🧠 7 Reasoning / Thinking Levels**: Fine-grained Chain-of-Thought (CoT) tuning (`instant`, `low`, `medium`, `high`, `max`, `auto`, and `off`).
-- **🤖 6 Autonomous Modes**: Dedicated agent personalities (`Code`, `Plan`, `Ask`, `Debug`, `Review`, `Arch`) with bilingual system prompt support.
-- **🌐 Real-Time Web Search & Deep Scrape**: High-fidelity search and full-DOM scraping powered by TinyFish AI API with seamless DuckDuckGo HTML fallback.
-- **🎨 Modern Responsive UI**:
-  - Dynamic capability badge bar (`#modelBadgeBar`) showing live context length, output limits, and capability tags.
-  - CSP-compliant fenced code blocks with language headers and dedicated instant copy buttons.
-  - Space-saving adaptive Send / Stop toggling for narrow editor sidebars.
-  - Auto-expanding prompt input box (up to 200px height).
-  - One-click assistant message copy (`📋`), Markdown transcript export (`📄`), and session snapshot archives (`📷`).
-- **🌐 Bilingual Localization**: Complete native experience in **English** (`en`) and **Bahasa Indonesia** (`id`), with automatic theme syncing (`auto`, `dark`, `light`).
+### 🤖 AI Model Ecosystem
+
+- **39 Live Synchronized Models** — Full alignment with the Bailu AI cloud dashboard, all verified from the live production API.
+- **Flagship Enterprise Tier**: `bailu-turing` (1M context, 131K output, Deep Reasoning + Vision), `bailu-2.8` (Claude Opus 5 Tier, flagship multimodal), `bailu-2.8-nvfp8` (NVFP8 high-speed quantized), `bailu-2.8-lite` (MoE efficient), `bailu-2.8-free` (218K output community access).
+- **Apex Dense Coding Line**: `bailu-apex-2.7` (512K context, 262K output), `bailu-apex-openclaw` (tool-use & agent workflows), `bailu-apex-2` (1M context, deep codebase comprehension), `bailu-apex-2.6` (free multimodal), `bailu-apex-172b` (large-scale architecture).
+- **Smart Auto Router**: `bailu-auto` automatically selects the optimal model engine based on prompt complexity and cost.
+- **Ultra-Long Context**: Support for context windows up to **1,048,576 tokens** (1M) with single-response outputs up to **262,144 tokens** (256K).
+- **Edge & Fast Line**: `bailu-dash`, `bailu-edge-2`, `bailu-edge-8b` (Agent MoE), `bailu-edge-0.5b`, `bailu-edge-thinking` for low-latency agentic tasks.
+- **Frontier Series**: `Yuyu-Titan-3.0`, `Yuyu-Legend-Preview`, `yuyu-air` (MoE Free), `bailu-2.6`, and `bailu-im-30b-test`.
+
+### 🧠 Deep Reasoning Engine
+
+- **7 Chain-of-Thought Levels**: Fine-grained reasoning intensity control — `instant`, `low`, `medium`, `high`, `max`, `auto`, and `off`.
+- **Adaptive Thinking Selector**: Reasoning controls automatically dim (`.no-think` styling) when the active model does not support thinking parameters.
+- **Streaming SSE Support**: Real-time token-by-token streaming with TextDecoder final-flush fix — guarantees the last token is always delivered without truncation.
+- **Fallback Resilience**: Full `reasoning_effort` parameter preserved in automatic non-streaming fallback on 503/network errors.
+
+### 🎭 Specialized Agent Modes
+
+Six built-in agent personalities, each with a distinct system prompt and behavior profile:
+
+| Mode | Focus |
+| :--- | :--- |
+| **Code** | Write, refactor, and optimize production code |
+| **Plan** | Phased implementation planning and task breakdown |
+| **Ask** | Research, explanation, and QA with no file writes |
+| **Debug** | 4-phase systematic debugging and root cause analysis |
+| **Review** | 5-dimension code review (correctness, security, performance, readability, architecture) |
+| **Arch** | C4 architecture design, ADR drafting, and system design |
+
+### 🌐 High-Fidelity Web Intelligence
+
+- **TinyFish AI API** (`api.search.tinyfish.ai` + `api.fetch.tinyfish.ai`) for semantic search and full-DOM markdown extraction.
+- **Automatic URL Detection**: Paste any HTTP/HTTPS URL into the chat to trigger instant headless web crawl + markdown conversion.
+- **Zero-Config Fallback**: Built-in DuckDuckGo HTML search parser activates automatically when no TinyFish key is configured.
+- **Web Source Citations**: Search results are injected as context before the LLM response for transparent, grounded answers.
+
+### 🎨 Modern Kilo-Style UI (v1.1.9 Overhaul)
+
+- **Crisp SVG Codicons**: Developer-oriented inline SVG action icons consistent across Dark, Light, and High-Contrast themes — no system OS emoji dependency.
+- **Welcome Card** (`#welcomeCard`): Four one-click prompt starters (`💡 Explain active file`, `✨ Refactor & clean`, `🧪 Generate unit tests`, `🔍 Debug & find bugs`) when chat is empty, auto-dismissed on first message.
+- **Live Streaming Indicator**: Animated cursor `▍` with `@keyframes blinkCursor` during active SSE token reception.
+- **Pulsing Status Dot** (`#statusDot`): Glowing green (idle) / pulsing amber-blue (busy) with dynamic tooltip.
+- **High-Contrast Message Bubbles**: Clear visual separation between user (`👤 You`) and assistant (`🤖 Bailu`) messages. Readable at 250px narrow sidebar widths.
+- **Dynamic Capability Badge Bar** (`#modelBadgeBar`): Real-time pills showing context length (`1M ctx`, `262K ctx`), max output (`131K out`, `262K out`), and tags (`Opus 5 Tier`, `Vision`, `Free`, `Edge`, `MoE`).
+- **Code Block Language Headers**: Fenced code blocks feature language labels and isolated CSP-safe copy buttons with `✓` confirmation animation.
+- **Adaptive Send / Stop Toggle**: Single button seamlessly switches between Send and Stop to save space on compact sidebars.
+- **Auto-Expanding Input**: Chat textarea grows dynamically up to 200px when typing long prompts or pasting multi-line code blocks.
+- **One-Click Export**: Copy any assistant message (`📋`), export full session as Markdown transcript (`📄`), or archive conversation state as a timestamped JSON snapshot (`📷`).
+
+### 🔒 Security & Reliability
+
+- **Encrypted Keychain Storage**: API tokens stored exclusively in VS Code `SecretStorage` — never written to `settings.json` or disk.
+- **Cryptographic CSP Nonces**: Every webview renders with a unique `crypto.randomUUID()` nonce, blocking XSS and unauthorized script injection.
+- **Strict Path-Traversal Guards**: AI-generated file writes verify target paths with `path.relative()` against the active workspace boundary.
+- **Snapshot Path Hardening**: `path.basename()` wrapping in `loadSnapshot()` blocks directory traversal outside `~/.bailucode/snapshots/`.
+- **Mandatory Restart Prompt**: Every install, update, or reinstall triggers an interactive notification to restart the Extension Host, ensuring zero stale state and fresh `SecretStorage` access.
+- **Read-Only Environment Resilience**: Sandboxed `writeJson()` with `try/catch` — safe in Docker, Nix, and remote containers.
+
+### ⚙️ Developer Experience
+
+- **Antigravity Superpowers Methodology**: Built-in `@skill:<name>` syntax injects TDD, 4-phase debugging, 5-dimension review, and 350+ Antigravity skill runbooks directly into the agent context.
+- **Workspace Auto-Context** (16 KB cap): Automatically enriches prompts with relevant workspace file snippets for reduced hallucinations.
+- **Automated File Writing Mode Guard**: AI file generation is locked in `Ask` and `Plan` modes; common library filenames (e.g., `vue.js`) are excluded.
+- **Bilingual Localization**: Full UI available in **English** (`en`) and **Bahasa Indonesia** (`id`) with automatic theme sync (`auto`, `dark`, `light`).
+- **Global `~/.bailucode` Persistence**: Config, skills, agents, and usage data persist locally and sync with VS Code workspace settings.
+- **Universal IDE Compatibility**: Runs on VS Code, Code-OSS, VSCodium, Cursor, Windsurf, Trae, Kilo Code, Antigravity-IDE, vscode.dev, GitHub Codespaces, and all `vscode` API-compatible forks.
 
 ---
 
