@@ -11,7 +11,7 @@ const SECRET_KEY = "bailu.apiToken";
 const MAX_HISTORY = 24;
 const FETCH_MS = 600000;
 const MAX_ACTIVE_CHARS = 80000;
-const MAX_OUT_CAP = 131072;
+const MAX_OUT_CAP = 262144;
 
 export interface SettingsMessage {
   apiKey?: string;
@@ -633,12 +633,13 @@ class BailuViewProvider
   ): Promise<void> {
     let full = await this.streamCompletion(base, token, body, model);
     if (!full) {
-      const plain = {
+      const plain: Record<string, unknown> = {
         model,
         messages: this.messages,
         stream: false,
         max_tokens: Math.min(Number(body.max_tokens) || 8192, MAX_OUT_CAP),
       };
+      if (body.reasoning_effort) plain.reasoning_effort = body.reasoning_effort;
       full = await this.jsonCompletion(base, token, plain);
       if (full) this.post({ type: "delta", text: full });
     }
@@ -730,6 +731,9 @@ class BailuViewProvider
         full += this.handleSseLine(line, model);
       }
     }
+    /* Flush any remaining TextDecoder bytes and trailing SSE line */
+    buf += dec.decode();
+    if (buf.trim()) full += this.handleSseLine(buf, model);
     return full;
   }
 

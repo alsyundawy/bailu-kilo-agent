@@ -71,7 +71,7 @@ assert.ok(subs.length >= 1, "subscriptions registered");
 const pkg = JSON.parse(
   fs.readFileSync(path.join(root, "package.json"), "utf8"),
 );
-assert.strictEqual(pkg.version, "1.1.8");
+assert.strictEqual(pkg.version, "1.1.9");
 assert.strictEqual(
   pkg.contributes.viewsContainers.activitybar[0].icon,
   "media/activity.svg",

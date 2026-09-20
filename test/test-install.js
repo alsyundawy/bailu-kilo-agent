@@ -7,7 +7,7 @@ const { execFileSync } = require("node:child_process");
 const Module = require("node:module");
 
 const root = path.join(__dirname, "..");
-const vsixName = "bailu-kilo-agent-1.1.8.vsix";
+const vsixName = "bailu-kilo-agent-1.1.9.vsix";
 const vsixPath = path.join(root, vsixName);
 
 const UNZIP_BIN = fs.existsSync("/usr/bin/unzip") ? "/usr/bin/unzip" : "unzip";
@@ -152,7 +152,7 @@ const installedPkg = JSON.parse(
   fs.readFileSync(path.join(installedExtDir, "package.json"), "utf8"),
 );
 assert.strictEqual(installedPkg.name, "bailu-kilo-agent");
-assert.strictEqual(installedPkg.version, "1.1.8");
+assert.strictEqual(installedPkg.version, "1.1.9");
 assert.strictEqual(installedPkg.main, "./out/extension.js");
 assert.strictEqual(installedPkg.engines?.vscode, "^1.90.0");
 assert.ok(

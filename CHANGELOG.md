@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.9 — Bugfix & Reliability Patch
+
+> **TypeScript compile**: `tsc 5.x` · **VSCode Engine**: `^1.85.0` · **Node**: `≥ 18`
+
+- **`fix` SSE TextDecoder final-flush bug** — When the API server terminated an SSE stream without a trailing newline, the last `data:` chunk remained in the decoder buffer and was silently discarded. Fixed by calling `dec.decode()` (no-arg flush) after the reader loop, then processing any remaining buffered line. Prevents the last sentence/word of a long response being lost.
+- **`fix` `reasoning_effort` dropped on streaming fallback** — If the initial SSE streaming request failed (network hiccup, proxy timeout, 503), the non-streaming JSON fallback rebuilt the request body from scratch and omitted `reasoning_effort`. Thinking models (`bailu-2.8`, `bailu-apex-2.7`, etc.) silently fell back to non-thinking mode. Fixed by forwarding `body.reasoning_effort` into the fallback body.
+- **`fix` `MAX_OUT_CAP` vs catalog `maxOut` discrepancy** — Nine models advertised output capacities (up to 262K tokens) in the catalog badge UI, but the hard cap of `131072` caused all requests to be silently truncated to 128K regardless. Raised `MAX_OUT_CAP` to `262144` (256K). Only two true 512K Apex models remain capped at 262K, all others now honour their stated catalog capacity. Updated `bailu.maxTokens` setting maximum to match.
+- **`chore` Test & audit suite** — Added `test/audit.js` covering `normalizeBase`, `extractFencePath`, `trimHistory`, `isMaskedSecret`, `isAllowedBase`, catalog/cap alignment, footer year staleness, and `openUrl` allowlist strictness. All checks green.
+
 ## 1.1.8
 
 - **Model Catalog Alignment (38 Models)**: Sinkronisasi lengkap dengan dashboard Bailu terkini. Menambahkan model flagship `bailu-2.8` (Claude Opus 5 Tier, 1M context, 131K output), `bailu-2.8-nvfp8`, `bailu-2.8-lite` (MoE), `bailu-2.8-free`, `bailu-apex-openclaw` (agent workflow & tool use), varian multimodal/vision (`bailu-2.8-vl-2B`, `bailu-2.7-lite-vl`, `bailu-2.7-vl-350m`), serta model edge (`bailu-edge-8b`, `bailu-edge-0.5b`).
